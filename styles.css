@@ -1,0 +1,133 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/*  */
+
+.container {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  border: solid 1px white;
+  z-index: 0;
+  background: black;
+}
+
+
+
+svg {
+  z-index: inherit;
+}
+
+.svgBox {
+  width: 30vw;
+  height: inherit;
+  z-index: inherit; 
+}
+.svgBox2 {
+  width: 26vw;
+  height: inherit;
+  z-index: inherit; 
+}
+
+.row1 {
+  display: flex;
+  flex-direction: row;
+  height: 25vh;
+  justify-content: space-between;
+  margin-bottom: 10vh;
+  z-index: 4;
+}
+
+.row2 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 25vh;
+  z-index: 4;
+}
+
+#one {
+  z-index: 2;
+}
+#two {
+  z-index: 2;
+}
+#three {
+  z-index: 2;
+}
+#four {
+  z-index: 2;
+}
+#five {
+  z-index: 2;
+}
+#six {
+  z-index: 2;
+}
+#seven {
+  z-index: 2;
+}
+#eight {
+  z-index: 2;
+}
+
+canvas {
+  z-index: 1;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.world {
+  position: absolute;
+  z-index: 0;
+  width: 50vw;
+  height: 50vh;
+  top: 25vh;
+  left: 25vw;
+}

@@ -86,6 +86,404 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./graphs/one.js":
+/*!***********************!*\
+  !*** ./graphs/one.js ***!
+  \***********************/
+/*! exports provided: displayOne, countriesData */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayOne", function() { return displayOne; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "countriesData", function() { return countriesData; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+
+var dataKeys = {
+  xName: 'Country (region)',
+  yNames: ['Corruption', 'Country (region)', 'Freedom', 'Generosity', 'Health life expectancy', 'Ladder', 'Log of GDP per capita', 'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support']
+};
+var one = document.getElementById('one');
+var totalGraphWidth = one.clientWidth;
+var totalGraphHeight = one.clientHeight; // create margins and dimensions
+
+var margin = {
+  top: 20,
+  right: 20,
+  bottom: 100,
+  left: 5
+};
+var graphWidth = totalGraphWidth - margin.left - margin.right;
+var graphHeight = totalGraphHeight - margin.top - margin.bottom;
+var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#one').append('svg').attr('width', totalGraphWidth).attr('height', totalGraphHeight); // .attr('transform', `translate(${(window.innerWidth - totalGraphWidth - 50) / 2})`)
+
+var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
+var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
+var yAxisGroup = graph.append('g'); // Scales
+
+var y = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().range([graphHeight, 0]);
+var x = d3__WEBPACK_IMPORTED_MODULE_0__["scaleBand"]().range([0, graphWidth]).paddingInner(0.2).paddingOuter(0.2);
+var title = graph.append('text').attr('y', -2).attr('x', graphWidth / 2.5).text('');
+var xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](x);
+var yAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisLeft"](y).ticks(3).tickFormat(function (d) {
+  return d + ' Rank';
+});
+xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'start').attr('fill', 'white').attr('color', 'white');
+var displayOne = function displayOne(country) {
+  var data = Object.assign({}, country);
+  var countryName = data['Country (region)'];
+  delete data['Country (region)'];
+  var barsKeys = Object.keys(data);
+  var barsValues = Object.values(data);
+  var bars = [];
+  barsKeys.forEach(function (key, idx) {
+    bars[idx] = {
+      name: barsKeys[idx],
+      value: barsValues[idx]
+    };
+  }); // 156 total countries are evaluated, so the maximum is the lowest rated country
+
+  y.domain([0, 156]); // Number of categories
+
+  x.domain(barsKeys); // Tie data to the rects available
+
+  var rects = graph.selectAll('rect').data(bars);
+  rects.exit().remove();
+  rects.attr('width', x.bandwidth).attr('fill', 'white').attr('x', function (d) {
+    return x(d.name);
+  }); // .transition().duration(1000)
+  //   .attr('y', d => y(d.value))
+  //   .attr('height', d => graphHeight - y(d.value));
+  // return;
+
+  rects.enter().append("rect").attr("width", x.bandwidth).attr("height", 0).attr("fill", "white").attr('x', function (d) {
+    return x(d.name);
+  }).attr('y', graphHeight).merge(rects) // Everything called below merge affects both entered and currently existing elements
+  .transition().duration(1500).attr('y', function (d) {
+    if (d.name == 'Negative affect' || d.name == 'Corruption') {
+      return y(d.value);
+    }
+
+    return y(156 - d.value);
+  }).attr('height', function (d) {
+    if (d.name == 'Negative affect' || d.name == 'Corruption') {
+      return graphHeight - y(d.value);
+    }
+
+    return graphHeight - y(156 - d.value);
+  });
+  xAxisGroup.call(xAxis);
+  yAxisGroup.call(yAxis);
+  xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'end').attr('fill', 'white');
+  title.text("".concat(countryName));
+  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').attr('fill', 'white');
+  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').style('fill', 'white');
+};
+var countriesData = {};
+d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/2019.json').then(function (data) {
+  data.countries.forEach(function (country) {
+    countriesData[country['Country (region)']] = country;
+  }); // Countries that are availabled in both sets, but don't have equivalent names:
+  // i.e. : Palestine and Palestinian Terriories, and Cote d'Ivore == Ivory Coast
+  // Some regions, like Puerto Rico, can be included in the US, as it is a territory of the US
+
+  countriesData['Bosnia and Herz.'] = countriesData['Bosnia and Herzegovina'];
+  countriesData['Central African Rep.'] = countriesData['Central African Republic'];
+  countriesData["Côte d'Ivoire"] = countriesData['Ivory Coast'];
+  countriesData['Dem. Rep. Congo'] = countriesData['Congo (Kinshasa)'];
+  countriesData['Dominican Rep.'] = countriesData['Dominican Republic'];
+  countriesData['Congo'] = countriesData['Congo (Brazzaville)'];
+  countriesData['Czech Rep.'] = countriesData['Czech Republic'];
+  countriesData['N. Cyprus'] = countriesData['Northern Cyprus'];
+  countriesData['Korea'] = countriesData['South Korea'];
+  countriesData['Lao PDR'] = countriesData['Laos'];
+  countriesData['Palestine'] = countriesData['Palestinian Territories'];
+  countriesData['Puerto Rico'] = countriesData['United States'];
+  countriesData['S. Sudan'] = countriesData['South Sudan'];
+  console.log(countriesData);
+}); // Data from firebase -- Continously
+// db.collection('countries').onSnapshot( res => {
+//   res.docChanges().forEach( change => {
+//     const doc = { ...change.doc.data() };
+//     switch(change.type) {
+//       case 'added':
+//         countries[doc['Country (region)']] = doc;
+//         break;
+//       default:
+//         break;
+//     }
+//   })
+//   const countryNames = Object.keys(countries);
+//   const displayLoop = () => {
+//     const randomIndex = Math.floor(Math.random() * 156);
+//     display(countries[countryNames[randomIndex]]);
+//   }
+//   displayLoop();
+//   setInterval(displayLoop, 3000);
+// });
+// TWEENS
+
+var widthTween = function widthTween(d) {
+  var i = d3__WEBPACK_IMPORTED_MODULE_0__["interpolate"](0, x.bandwidth());
+  return function (t) {
+    return i(t);
+  };
+};
+
+/***/ }),
+
+/***/ "./graphs/three.js":
+/*!*************************!*\
+  !*** ./graphs/three.js ***!
+  \*************************/
+/*! exports provided: displayThree */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayThree", function() { return displayThree; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../index */ "./index.js");
+
+ // export const displaythree = '';
+
+var dataKeys = {
+  xName: 'Country (region)',
+  yNames: ['Corruption', 'Country (region)', 'Freedom', 'Generosity', 'Health life expectancy', 'Ladder', 'Log of GDP per capita', 'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support']
+};
+var three = document.getElementById('three');
+var totalGraphWidth = three.clientWidth;
+var totalGraphHeight = three.clientHeight; // create margins and dimensions
+
+var margin = {
+  top: 20,
+  right: 20,
+  bottom: 100,
+  left: 10
+};
+var graphWidth = totalGraphWidth - margin.left - margin.right;
+var graphHeight = totalGraphHeight - margin.top - margin.bottom;
+var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#three').append('svg').attr('width', totalGraphWidth).attr('height', totalGraphHeight); // .attr('transform', `translate(${(window.innerWidth - totalGraphWidth - 50) / 2})`)
+
+var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
+var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
+var yAxisGroup = graph.append('g'); // Scales
+
+var y = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().range([graphHeight, 0]);
+var x = d3__WEBPACK_IMPORTED_MODULE_0__["scaleBand"]().range([0, graphWidth]).paddingInner(0.2).paddingOuter(0.2);
+var title = graph.append('text').attr('y', -2).attr('x', graphWidth / 2.5).text('');
+var xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](x);
+var yAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisLeft"](y); // .ticks(3)
+// .tickFormat(d => d + ' Rank')
+
+xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'start').attr('fill', 'white').attr('color', 'white');
+var displayThree = function displayThree(country) {
+  var data = Object.assign({}, _index__WEBPACK_IMPORTED_MODULE_1__["randomData"][country]);
+  var countryName = data['Country'];
+  console.log(data); // delete data['Country'];
+  // delete data['Agriculture'];
+  // delete data['Climate'];
+  // delete data['Coastline (coast/area ratio)'];
+  // delete data['Crops (%)'];
+  // delete data['GDP ($ per capita)'];
+  // delete data['Industry'];
+  // delete data['Literacy (%)'];
+  // delete data['Infant mortality (per 1000 births)'];
+  // delete data['Net migration'];
+  // delete data['Other (%)'];
+  // delete data['Phones (per 1000)'];
+  // delete data['Pop. Density (per sq. mi.)'];
+  // delete data['Population'];
+  // delete data['Region'];
+  // delete data['Service'];
+  // delete data['Area (sq. mi.)'];
+  // delete data['Arable (%)'];
+
+  return; // console.log(data);
+  // return;
+
+  var barsKeys = Object.keys(data);
+  var barsValues = Object.values(data);
+  var bars = [];
+  barsKeys.forEach(function (key, idx) {
+    bars[idx] = {
+      name: barsKeys[idx],
+      value: barsValues[idx]
+    };
+  }); // 156 total countries are evaluated, so the maximum is the lowest rated country
+
+  y.domain([0, 52]); // Number of categories
+
+  x.domain(barsKeys); // Tie data to the rects available
+
+  var rects = graph.selectAll('rect').data(bars);
+  rects.exit().remove();
+  rects.attr('width', x.bandwidth).attr('fill', 'white').attr('x', function (d) {
+    return x(d.name);
+  }); // .transition().duration(1000)
+  //   .attr('y', d => y(d.value))
+  //   .attr('height', d => graphHeight - y(d.value));
+  // return;
+
+  rects.enter().append("rect").attr("width", x.bandwidth).attr("height", 0).attr("fill", "white").attr('x', function (d) {
+    return x(d.name);
+  }).attr('y', graphHeight).merge(rects) // Everything called below merge affects both entered and currently existing elements
+  .transition().duration(1500).attr('y', function (d) {
+    if (typeof d.value === 'string') {
+      var newValue = d.value.replace(/,/g, ".");
+      return y(newValue);
+    }
+
+    return y(d.value);
+  }).attr('height', function (d) {
+    if (typeof d.value === 'string') {
+      var newValue = d.value.replace(/,/g, ".");
+      return graphHeight - y(newValue);
+    }
+
+    return graphHeight - y(d.value);
+  });
+  xAxisGroup.call(xAxis); // yAxisGroup.call(yAxis);
+
+  xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'end').attr('fill', 'white');
+  title.text("".concat(countryName));
+  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').attr('fill', 'white');
+  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').style('fill', 'white');
+}; // TWEENS
+// const widthTween = (d) => {
+//   let i = d3.interpolate(0, x.bandwidth());
+//   return function (t) {
+//     return i(t);
+//   }
+// }
+
+/***/ }),
+
+/***/ "./graphs/two.js":
+/*!***********************!*\
+  !*** ./graphs/two.js ***!
+  \***********************/
+/*! exports provided: displayTwo */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayTwo", function() { return displayTwo; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../index */ "./index.js");
+
+ // export const displayTwo = '';
+
+var dataKeys = {
+  xName: 'Country (region)',
+  yNames: ['Corruption', 'Country (region)', 'Freedom', 'Generosity', 'Health life expectancy', 'Ladder', 'Log of GDP per capita', 'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support']
+};
+var two = document.getElementById('two');
+var totalGraphWidth = two.clientWidth;
+var totalGraphHeight = two.clientHeight; // create margins and dimensions
+
+var margin = {
+  top: 20,
+  right: 20,
+  bottom: 100,
+  left: 10
+};
+var graphWidth = totalGraphWidth - margin.left - margin.right;
+var graphHeight = totalGraphHeight - margin.top - margin.bottom;
+var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#two').append('svg').attr('width', totalGraphWidth).attr('height', totalGraphHeight); // .attr('transform', `translate(${(window.innerWidth - totalGraphWidth - 50) / 2})`)
+
+var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
+var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
+var yAxisGroup = graph.append('g'); // Scales
+
+var y = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().range([graphHeight, 0]);
+var x = d3__WEBPACK_IMPORTED_MODULE_0__["scaleBand"]().range([0, graphWidth]).paddingInner(0.2).paddingOuter(0.2);
+var title = graph.append('text').attr('y', -2).attr('x', graphWidth / 2.5).text('');
+var xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](x);
+var yAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisLeft"](y); // .ticks(3)
+// .tickFormat(d => d + ' Rank')
+
+xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'start').attr('fill', 'white').attr('color', 'white');
+var displayTwo = function displayTwo(country) {
+  var data = Object.assign({}, _index__WEBPACK_IMPORTED_MODULE_1__["randomData"][country]);
+  var countryName = data['Country'];
+  delete data['Country'];
+  delete data['Agriculture'];
+  delete data['Climate'];
+  delete data['Coastline (coast/area ratio)'];
+  delete data['Crops (%)'];
+  delete data['GDP ($ per capita)'];
+  delete data['Industry'];
+  delete data['Literacy (%)'];
+  delete data['Infant mortality (per 1000 births)'];
+  delete data['Net migration'];
+  delete data['Other (%)'];
+  delete data['Phones (per 1000)'];
+  delete data['Pop. Density (per sq. mi.)'];
+  delete data['Population'];
+  delete data['Region'];
+  delete data['Service'];
+  delete data['Area (sq. mi.)'];
+  delete data['Arable (%)']; // console.log(data);
+  // return;
+
+  var barsKeys = Object.keys(data);
+  var barsValues = Object.values(data);
+  var bars = [];
+  barsKeys.forEach(function (key, idx) {
+    bars[idx] = {
+      name: barsKeys[idx],
+      value: barsValues[idx]
+    };
+  }); // 156 total countries are evaluated, so the maximum is the lowest rated country
+
+  y.domain([0, 52]); // Number of categories
+
+  x.domain(barsKeys); // Tie data to the rects available
+
+  var rects = graph.selectAll('rect').data(bars);
+  rects.exit().remove();
+  rects.attr('width', x.bandwidth).attr('fill', 'white').attr('x', function (d) {
+    return x(d.name);
+  }); // .transition().duration(1000)
+  //   .attr('y', d => y(d.value))
+  //   .attr('height', d => graphHeight - y(d.value));
+  // return;
+
+  rects.enter().append("rect").attr("width", x.bandwidth).attr("height", 0).attr("fill", "white").attr('x', function (d) {
+    return x(d.name);
+  }).attr('y', graphHeight).merge(rects) // Everything called below merge affects both entered and currently existing elements
+  .transition().duration(1500).attr('y', function (d) {
+    if (typeof d.value === 'string') {
+      var newValue = d.value.replace(/,/g, ".");
+      return y(newValue);
+    }
+
+    return y(d.value);
+  }).attr('height', function (d) {
+    if (typeof d.value === 'string') {
+      var newValue = d.value.replace(/,/g, ".");
+      return graphHeight - y(newValue);
+    }
+
+    return graphHeight - y(d.value);
+  });
+  xAxisGroup.call(xAxis); // yAxisGroup.call(yAxis);
+
+  xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'end').attr('fill', 'white');
+  title.text("".concat(countryName));
+  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').attr('fill', 'white');
+  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').style('fill', 'white');
+}; // TWEENS
+// const widthTween = (d) => {
+//   let i = d3.interpolate(0, x.bandwidth());
+//   return function (t) {
+//     return i(t);
+//   }
+// }
+
+/***/ }),
+
 /***/ "./helpers/canvasSetup.js":
 /*!********************************!*\
   !*** ./helpers/canvasSetup.js ***!
@@ -120,50 +518,320 @@ var createMapTexture = function createMapTexture(json, color) {
 
 /***/ }),
 
-/***/ "./helpers/sceneSetup.js":
+/***/ "./helpers/eventSetup.js":
 /*!*******************************!*\
-  !*** ./helpers/sceneSetup.js ***!
+  !*** ./helpers/eventSetup.js ***!
   \*******************************/
-/*! exports provided: scene, camera, renderer */
+/*! exports provided: setEvents */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "scene", function() { return scene; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "camera", function() { return camera; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setEvents", function() { return setEvents; });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _generalSetup__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./generalSetup */ "./helpers/generalSetup.js");
+
+
+var raycaster = new three__WEBPACK_IMPORTED_MODULE_0__["Raycaster"]();
+function setEvents(camera, items, type, wait) {
+  var listener = function listener(event) {
+    var mouse = {
+      x: (event.clientX - 1) / window.innerWidth * 2 - 1,
+      y: -((event.clientY - 1) / window.innerHeight) * 2 + 1
+    };
+    var vector = new three__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+    vector.set(mouse.x, mouse.y, 0.5);
+    vector.unproject(camera);
+    raycaster.ray.set(camera.position, vector.sub(camera.position).normalize());
+    var target = raycaster.intersectObjects(items);
+
+    if (target.length) {
+      target[0].type = type;
+      target[0].object.dispatchEvent(target[0]);
+    }
+  };
+
+  if (!wait) {
+    document.addEventListener(type, listener, false);
+  } else {
+    document.addEventListener(type, Object(_generalSetup__WEBPACK_IMPORTED_MODULE_1__["debounce"])(listener, wait, true), false);
+  }
+}
+
+/***/ }),
+
+/***/ "./helpers/generalSetup.js":
+/*!*********************************!*\
+  !*** ./helpers/generalSetup.js ***!
+  \*********************************/
+/*! exports provided: memoize, debounce, getTween */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "memoize", function() { return memoize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "debounce", function() { return debounce; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTween", function() { return getTween; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+ // Memoize and debounce pulled from WebGL Tutorial by Steven Hall
+// adapted from memoize.js by @philogb and @addyosmani
+
+function memoize(fn) {
+  return function () {
+    var args = Array.prototype.slice.call(arguments);
+    var key = "",
+        len = args.length,
+        cur = null; // Get all args one by one
+
+    while (len--) {
+      cur = args[len]; //If current arg is a string, add it, otherwise stringify and add it
+
+      key += cur === Object(cur) ? JSON.stringify(cur) : cur; // Initialize memoize object
+
+      fn.memoize || (fn.memoize = {});
+    } //Each key in memoize object
+
+
+    return key in fn.memoize ? fn.memoize[key] : fn.memoize[key] = fn.apply(this, args);
+  };
+}
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function () {
+    var context = this,
+        args = arguments;
+
+    var later = function later() {
+      timeout = null;
+
+      if (!immediate) {
+        func.apply(context, args);
+      }
+    };
+
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+
+    if (callNow) {
+      func.apply(context, args);
+    }
+  };
+}
+var getTween = function getTween(prop, to, time) {
+  time = time || 500;
+  var node = this;
+  var curr = node[prop];
+  console.log(curr);
+  console.log(to); // return;
+
+  var interpol = d3__WEBPACK_IMPORTED_MODULE_0__["interpolateObject"](curr, to);
+  return function (t) {
+    node[prop].copy(interpol(t / time));
+
+    if (t >= time) {
+      return true;
+    }
+  };
+};
+
+/***/ }),
+
+/***/ "./helpers/sceneSetup.js":
+/*!*******************************!*\
+  !*** ./helpers/sceneSetup.js ***!
+  \*******************************/
+/*! exports provided: canvas, renderer, camera, controls, scene, light */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "canvas", function() { return canvas; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderer", function() { return renderer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "camera", function() { return camera; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "controls", function() { return controls; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "scene", function() { return scene; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "light", function() { return light; });
 /* harmony import */ var three__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+/* harmony import */ var three_examples_jsm_controls_OrbitControls_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! three/examples/jsm/controls/OrbitControls.js */ "./node_modules/three/examples/jsm/controls/OrbitControls.js");
+
 
 
 var canvas = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("body").append("canvas").attr("width", window.innerWidth).attr("height", window.innerHeight);
-canvas.node().getContext("webgl"); // Define place to put objects, or cameras/light sources.
-
-var scene = new three__WEBPACK_IMPORTED_MODULE_0__["Scene"](); //Field of Vision, AspectRatio, frustrum 'base' and frustrum 'top'
-//75 represents how tall the frustrums
-//Aspect Ration determines how wide the frustrums are
-//1 represents the min distance from the camera in which Three.js renders the scene
-//500 represents the max distance once can see the scne from the position of the camera.
-
-var camera = new three__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](75, window.innerWidth / window.innerHeight, 1, 500); // How far the globe is
-
-camera.position.z = 500; // Set WebGLRender and size
-
+canvas.node().getContext("webgl");
 var renderer = new three__WEBPACK_IMPORTED_MODULE_0__["WebGLRenderer"]({
-  canvas: canvas.node()
+  canvas: canvas.node(),
+  antialias: true
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement); //Light source, hex of ckye, hex of ground, intensity
-//Ignored, overriden with texture
+document.body.appendChild(renderer.domElement);
+var camera = new three__WEBPACK_IMPORTED_MODULE_0__["PerspectiveCamera"](70, window.innerWidth / window.innerHeight, 1, 5000);
+camera.position.z = 1000;
+var controls = new three_examples_jsm_controls_OrbitControls_js__WEBPACK_IMPORTED_MODULE_2__["OrbitControls"](camera, renderer.domElement); // // controls.autoRotate = true;
 
-var light = new three__WEBPACK_IMPORTED_MODULE_0__["HemisphereLight"]('#fff', '#666', 1.5);
-light.position.set(0, 500, 0);
+var scene = new three__WEBPACK_IMPORTED_MODULE_0__["Scene"]();
+var light = new three__WEBPACK_IMPORTED_MODULE_0__["HemisphereLight"]('#ffffff', '#666666', 1.5);
+light.position.set(0, 1000, 0);
 scene.add(light);
-window.addEventListener('resize', function () {
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-});
+} // import * as THREE from 'three';
+// import * as d3 from 'd3';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// const world = document.getElementsByClassName('world')[0];
+// const width = world.clientWidth;
+// const height = world.clientHeight;
+// export var canvas = d3.select(".world").append("canvas")
+//   .attr("width", width)
+//   .attr("height", height)
+// canvas.node().getContext("webgl");
+// export var renderer = new THREE.WebGLRenderer({ canvas: canvas.node(), antialias: true });
+// renderer.setSize(width, height);
+// world.appendChild(renderer.domElement);
+// export var camera = new THREE.PerspectiveCamera(70, width / height, 1, 5000);
+// camera.position.z = 1000;
+// export let controls = new OrbitControls(camera, renderer.domElement);
+// // // controls.autoRotate = true;
+// controls.enabled = true;
+// export var scene = new THREE.Scene();
+// export var light = new THREE.HemisphereLight('#ffffff', '#666666', 1.5);
+// light.position.set(0, 1000, 0);
+// scene.add(light);
+// window.addEventListener('resize', onWindowResize, false);
+// function onWindowResize() {
+//   camera.aspect = width / height;
+//   camera.updateProjectionMatrix();
+//   renderer.setSize(world, height);
+// }
+
+/***/ }),
+
+/***/ "./helpers/worldEvents.js":
+/*!********************************!*\
+  !*** ./helpers/worldEvents.js ***!
+  \********************************/
+/*! exports provided: getPoint, getEventCenter, convertToXYZ, geodecoder */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getPoint", function() { return getPoint; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getEventCenter", function() { return getEventCenter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertToXYZ", function() { return convertToXYZ; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "geodecoder", function() { return geodecoder; });
+function getPoint(event) {
+  // Get the vertices
+  var a = this.geometry.vertices[event.face.a];
+  var b = this.geometry.vertices[event.face.b];
+  var c = this.geometry.vertices[event.face.c]; // Average them together
+
+  var point = {
+    x: (a.x + b.x + c.x) / 3,
+    y: (a.y + b.y + c.y) / 3,
+    z: (a.z + b.z + c.z) / 3
+  };
+  return point;
+}
+function getEventCenter(event, radius) {
+  radius = radius || 100;
+  var point = getPoint.call(this, event);
+  var latRads = Math.acos(point.y / radius);
+  var lngRads = Math.atan2(point.z, point.x);
+  var lat = (Math.PI / 2 - latRads) * (180 / Math.PI);
+  var lng = (Math.PI - lngRads) * (180 / Math.PI);
+  return [lat, lng - 180];
+}
+function convertToXYZ(point, radius) {
+  radius = radius || 100;
+  var latRads = (90 - point[0]) * Math.PI / 180;
+  var lngRads = (180 - point[1]) * Math.PI / 180;
+  var x = radius * Math.sin(latRads) * Math.cos(lngRads);
+  var y = radius * Math.cos(latRads);
+  var z = radius * Math.sin(latRads) * Math.sin(lngRads);
+  return {
+    x: x,
+    y: y,
+    z: z
+  };
+}
+var geodecoder = function geodecoder(_ref) {
+  var features = _ref.features;
+  var store = {};
+
+  for (var i = 0; i < features.length; i++) {
+    store[features[i].id] = features[i];
+  }
+
+  return {
+    find: function find(id) {
+      return store[id];
+    },
+    search: function search(lat, lng) {
+      var match = false;
+      var country, coords;
+
+      for (var _i = 0; _i < features.length; _i++) {
+        country = features[_i];
+
+        if (country.geometry.type === 'Polygon') {
+          match = pointInPolygon(country.geometry.coordinates[0], [lng, lat]);
+
+          if (match) {
+            return {
+              code: features[_i].id // name: features[i].properties.name
+
+            };
+          }
+        } else if (country.geometry.type === 'MultiPolygon') {
+          coords = country.geometry.coordinates;
+
+          for (var j = 0; j < coords.length; j++) {
+            match = pointInPolygon(coords[j][0], [lng, lat]);
+
+            if (match) {
+              return {
+                code: features[_i].id // name: features[i].properties.name
+
+              };
+            }
+          }
+        }
+      }
+
+      return null;
+    }
+  };
+}; // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+var pointInPolygon = function pointInPolygon(poly, point) {
+  var x = point[0];
+  var y = point[1];
+  var inside = false,
+      xi,
+      xj,
+      yi,
+      yj,
+      xk;
+
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    xi = poly[i][0];
+    yi = poly[i][1];
+    xj = poly[j][0];
+    yj = poly[j][1];
+    xk = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+
+    if (xk) {
+      inside = !inside;
+    }
+  }
+
+  return inside;
+};
 
 /***/ }),
 
@@ -171,193 +839,196 @@ window.addEventListener('resize', function () {
 /*!******************!*\
   !*** ./index.js ***!
   \******************/
-/*! no exports provided */
+/*! exports provided: randomData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomData", function() { return randomData; });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 /* harmony import */ var three__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var topojson_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! topojson-client */ "./node_modules/topojson-client/src/index.js");
 /* harmony import */ var _helpers_canvasSetup__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helpers/canvasSetup */ "./helpers/canvasSetup.js");
 /* harmony import */ var _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./helpers/sceneSetup */ "./helpers/sceneSetup.js");
+/* harmony import */ var _helpers_eventSetup__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./helpers/eventSetup */ "./helpers/eventSetup.js");
+/* harmony import */ var _helpers_worldEvents__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./helpers/worldEvents */ "./helpers/worldEvents.js");
+/* harmony import */ var _helpers_generalSetup__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./helpers/generalSetup */ "./helpers/generalSetup.js");
+/* harmony import */ var _graphs_one__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./graphs/one */ "./graphs/one.js");
+/* harmony import */ var _graphs_two__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./graphs/two */ "./graphs/two.js");
+/* harmony import */ var _graphs_three__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./graphs/three */ "./graphs/three.js");
 
 
 
 
 
-var dataKeys = {
-  xName: 'Country (region)',
-  yNames: ['Corruption', 'Country (region)', 'Freedom', 'Generosity', 'Health life expectancy', 'Ladder', 'Log of GDP per capita', 'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support']
-};
-var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('.canvas').append('svg').attr('width', 600).attr('height', 600); // create margins and dimensions
 
-var margin = {
-  top: 20,
-  right: 20,
-  bottom: 100,
-  left: 100
-};
-var graphWidth = 600 - margin.left - margin.right;
-var graphHeight = 600 - margin.top - margin.bottom;
-var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
-var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
-var yAxisGroup = graph.append('g'); // Scales
 
-var y = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().range([graphHeight, 0]);
-var x = d3__WEBPACK_IMPORTED_MODULE_0__["scaleBand"]().range([0, 500]).paddingInner(0.2).paddingOuter(0.2);
-var title = graph.append('text').attr('y', 0).attr('x', 250).text('Test');
-var xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](x);
-var yAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisLeft"](y).ticks(3).tickFormat(function (d) {
-  return d + ' Rank';
+
+
+
+
+var randomData = {};
+d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/countriesOfTheWorld.json').then(function (countryData) {
+  countryData.forEach(function (country) {
+    randomData[country.Country] = country;
+  });
+  randomData['Bahamas'] = randomData['Bahamas, The'];
+  randomData['Bosnia and Herz.'] = randomData['Bosnia & Herzegovina'];
+  randomData["Côte d'Ivoire"] = randomData["Cote d'Ivoire"];
+  randomData['Dem. Rep. Congo'] = randomData["Congo, Dem. Rep."];
+  randomData['Congo'] = randomData["Congo, Repub. of the"];
+  randomData['N. Cyprus'] = randomData['Cyprus'];
+  randomData['Czech Rep.'] = randomData['Czech Republic'];
+  randomData['Dominican Rep.'] = randomData['Dominican Republic'];
+  randomData["Eq. Guinea"] = randomData['Equatorial Guinea'];
+  randomData['Korea'] = randomData['Korea, North'];
+  randomData['Lao PDR'] = randomData['Laos'];
+  randomData['Dem. Rep. Korea'] = randomData["Korea, North"];
+  randomData['W. Sahara'] = randomData["Western Sahara"];
+  randomData["Solomon Islands"] = randomData['Solomon Is.'];
+  randomData['Timor-Leste'] = randomData["East Timor"];
+  randomData["Trinidad and Tobago"] = randomData['Trinidad & Tobago'];
 });
-xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'start').attr('fill', 'blue');
-
-var display = function display(country) {
-  var data = Object.assign({}, country);
-  var countryName = data['Country (region)'];
-  delete data['Country (region)'];
-  var barsKeys = Object.keys(data);
-  var barsValues = Object.values(data);
-  var bars = [];
-  barsKeys.forEach(function (key, idx) {
-    bars[idx] = {
-      name: barsKeys[idx],
-      value: barsValues[idx]
-    };
-  }); // 156 total countries are evaluated, so the maximum is the lowest rated country
-
-  y.domain([0, 156]); // Number of categories defines the 
-
-  x.domain(barsKeys); // Tie data to the rects available
-
-  var rects = graph.selectAll('rect').data(bars);
-  rects.exit().remove();
-  rects.attr('width', x.bandwidth).attr('fill', 'blue').attr('x', function (d) {
-    return x(d.name);
-  }); // .transition().duration(1000)
-  //   .attr('y', d => y(d.value))
-  //   .attr('height', d => graphHeight - y(d.value));
-  // return;
-
-  rects.enter().append("rect").attr("width", x.bandwidth).attr("height", 0).attr("fill", "blue").attr('x', function (d) {
-    return x(d.name);
-  }).attr('y', graphHeight).merge(rects) // Everything called below merge affects both entered and currently existing elements
-  .transition().duration(1500).attr('y', function (d) {
-    return y(d.value);
-  }).attr('height', function (d) {
-    return graphHeight - y(d.value);
-  });
-  xAxisGroup.call(xAxis);
-  yAxisGroup.call(yAxis);
-  xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'end').attr('fill', 'blue');
-  title.text("".concat(countryName));
-};
-
-var countries = {};
-d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/2019.json').then(function (data) {
-  console.log(data);
-  data.countries.forEach(function (country) {
-    countries[country['Country (region)']] = country;
-  });
-  var countryNames = Object.keys(countries);
-  console.log(countryNames);
-
-  var displayLoop = function displayLoop() {
-    var randomIndex = Math.floor(Math.random() * 156);
-    display(countries[countryNames[randomIndex]]);
-  };
-
-  displayLoop();
-  setInterval(displayLoop, 3000);
-}); // Data from firebase -- Continously
-// db.collection('countries').onSnapshot( res => {
-//   res.docChanges().forEach( change => {
-//     const doc = { ...change.doc.data() };
-//     switch(change.type) {
-//       case 'added':
-//         countries[doc['Country (region)']] = doc;
-//         break;
-//       default:
-//         break;
-//     }
-//   })
-//   const countryNames = Object.keys(countries);
-//   const displayLoop = () => {
-//     const randomIndex = Math.floor(Math.random() * 156);
-//     display(countries[countryNames[randomIndex]]);
-//   }
-//   displayLoop();
-//   setInterval(displayLoop, 3000);
-// });
-// 
-// TWEENS
-
-var widthTween = function widthTween(d) {
-  var i = d3__WEBPACK_IMPORTED_MODULE_0__["interpolate"](0, x.bandwidth());
-  return function (t) {
-    return i(t);
-  };
-};
 /* ---------------------------  */
 // Load total mapping, should scale based on screen size
 
-
 d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/worldData.json').then(function (data) {
-  // GeoJSON conversion from countries data in topology 'data'
-  var countriesTopoToGeo = topojson_client__WEBPACK_IMPORTED_MODULE_2__["feature"](data, data.objects.countries); // Important: MeshBasicMaterial is not affected by light source -- Water Color
+  var currentCountry, overlay;
+  var segments = 500;
+  var globeSize = 100; // GeoJSON conversion from countries data in topology 'data'
 
-  var waterMaterial = new three__WEBPACK_IMPORTED_MODULE_1__["MeshBasicMaterial"]({
-    color: '#0077be'
-  }); // Radius, widthSegments, heightSegments
-  // Size of Sphere for first parameter
-  // How many vertical and horizontal lines are drawn
+  var countries = topojson_client__WEBPACK_IMPORTED_MODULE_2__["feature"](data, data.objects.countries);
+  var geo = Object(_helpers_worldEvents__WEBPACK_IMPORTED_MODULE_6__["geodecoder"])(countries);
+  var textureCache = Object(_helpers_generalSetup__WEBPACK_IMPORTED_MODULE_7__["memoize"])(function (countryID, color) {
+    var country = geo.find(countryID);
+    return Object(_helpers_canvasSetup__WEBPACK_IMPORTED_MODULE_3__["createMapTexture"])(country, color);
+  }); // Base globe with blue "water"
 
-  var sphere = new three__WEBPACK_IMPORTED_MODULE_1__["SphereGeometry"](200, 100, 100);
-  var baseLayer = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](sphere, waterMaterial); // A
-  // Texture for the countries, defines borders/land
-
-  var mapTexture = Object(_helpers_canvasSetup__WEBPACK_IMPORTED_MODULE_3__["createMapTexture"])(countriesTopoToGeo, '#fff'); // Transparence is needed here, otherwise the ocean will take the mapTexture color
-
-  var mapMaterial = new three__WEBPACK_IMPORTED_MODULE_1__["MeshBasicMaterial"]({
-    map: mapTexture,
+  var blueMaterial = new three__WEBPACK_IMPORTED_MODULE_1__["MeshPhongMaterial"]({
+    color: '#000',
     transparent: true
-  }); //C
+  });
+  var sphere = new three__WEBPACK_IMPORTED_MODULE_1__["SphereGeometry"](globeSize, segments, segments);
+  var baseGlobe = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](sphere, blueMaterial);
+  baseGlobe.rotation.y = Math.PI;
+  baseGlobe.addEventListener('click', onGlobeClick);
+  baseGlobe.addEventListener('mousemove', onGlobeMousemove); // add base map layer with all countries
 
-  var mapLayer = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](sphere, mapMaterial); //D
+  var worldTexture = Object(_helpers_canvasSetup__WEBPACK_IMPORTED_MODULE_3__["createMapTexture"])(countries, '#fff');
+  var mapMaterial = new three__WEBPACK_IMPORTED_MODULE_1__["MeshPhongMaterial"]({
+    map: worldTexture,
+    transparent: true
+  });
+  var baseMap = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](new three__WEBPACK_IMPORTED_MODULE_1__["SphereGeometry"](globeSize, segments, segments), mapMaterial);
+  baseMap.rotation.y = Math.PI; // var material = new THREE.MeshNormalMaterial();
+  // var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
+  // var sphere = new THREE.Mesh(sphereGeometry, material);
+  // sphere.position.set(-60, 55, 0);
+  // scene.add(sphere);
+
+  var outlineMaterial = new three__WEBPACK_IMPORTED_MODULE_1__["MeshBasicMaterial"]({
+    color: '#fff',
+    side: three__WEBPACK_IMPORTED_MODULE_1__["BackSide"]
+  });
+  var outlineMesh = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](sphere, outlineMaterial);
+  outlineMesh.scale.multiplyScalar(1.01); // create a container node and add the two meshes
 
   var root = new three__WEBPACK_IMPORTED_MODULE_1__["Object3D"]();
-  root.add(baseLayer);
-  root.add(mapLayer);
+  root.scale.set(2.5, 2.5, 2.5);
+  root.rotation.y = 0.02;
+  root.add(baseGlobe);
+  root.add(baseMap);
+  root.add(outlineMesh);
   _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["scene"].add(root);
 
-  function render() {
-    root.rotation.y += 0.005;
-    requestAnimationFrame(render);
-    _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["renderer"].render(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["scene"], _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"]);
+  function onGlobeClick(event) {
+    console.log(currentCountry);
+    Object(_graphs_one__WEBPACK_IMPORTED_MODULE_8__["displayOne"])(_graphs_one__WEBPACK_IMPORTED_MODULE_8__["countriesData"][currentCountry]); // console.log(randomData[currentCountry]);
+
+    Object(_graphs_two__WEBPACK_IMPORTED_MODULE_9__["displayTwo"])(currentCountry);
+    Object(_graphs_three__WEBPACK_IMPORTED_MODULE_10__["displayThree"])(currentCountry); // console.log(controls.object.position);
+    // console.log(controls.object.quaternion);
+    // console.log(controls.object.rotation);
+    // Get pointc, convert to latitude/longitude
+
+    var latlng = _helpers_worldEvents__WEBPACK_IMPORTED_MODULE_6__["getEventCenter"].call(this, event);
+    var country = geo.search(latlng[0], latlng[1]);
+
+    if (country) {
+      _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["controls"].enabled = false;
+      var XYZLatLng = Object(_helpers_worldEvents__WEBPACK_IMPORTED_MODULE_6__["convertToXYZ"])(latlng);
+      var initial = {
+        x: _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"].position.x,
+        y: _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"].position.y,
+        z: _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"].position.z
+      };
+      var end = {
+        x: XYZLatLng.x * 10,
+        y: XYZLatLng.y * 10,
+        z: XYZLatLng.z * 10
+      };
+      var interpol = d3__WEBPACK_IMPORTED_MODULE_0__["interpolateObject"](initial, end);
+      var duration = 750;
+      var timer = d3__WEBPACK_IMPORTED_MODULE_0__["timer"](function (t) {
+        var newPos = interpol(t / duration);
+        _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"].position.x = newPos.x;
+        _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"].position.y = newPos.y;
+        _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"].position.z = newPos.z;
+
+        if (t >= duration) {
+          _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["controls"].enabled = true;
+          timer.stop(); // const graphElement = document.getElementsByClassName('canvas')[0];
+          // console.log(graphElement);
+          // console.log(document.getSelection());
+          // console.log(document.getSelection().collapse)
+          // document.getSelection().collapse(graphElement, 1);
+          // baseGlobe.dispatchEvent( new Event('mousemove'));
+        }
+      });
+    }
   }
 
-  window.render = render;
-  render();
-}); // d3.json('./Misc/2019.json').then( happyData => {
-//   d3.json('worldData.json').then( geoData => {
-//     const happy = happyData.countries;
-//     const geo = geoData.objects.countries.geometries;
-//     const happyMap = {};
-//     const geoMap = {};
-//     happy.forEach( country => {
-//       happyMap[country['Country (region)']] = true;
-//     });
-//     geo.forEach( country => {
-//       geoMap[country['id']] = true;
-//     });
-//     const uniqueElements = {
-//       'happy': [],
-//       'geo': []
-//     };
-//     const happyNames = Object.keys(happyMap);
-//     const geoNames = Object.keys(geoMap);
-//     let ignoredNames = {};
+  function onGlobeMousemove(event) {
+    var map, material; // Get pointc, convert to latitude/longitude
+
+    var latlng = _helpers_worldEvents__WEBPACK_IMPORTED_MODULE_6__["getEventCenter"].call(this, event); // console.log(latlng);
+    // Look for country at that latitude/longitude
+
+    var country = geo.search(latlng[0], latlng[1]);
+
+    if (country !== null && country.code !== currentCountry) {
+      // Track the current country displayed
+      currentCountry = country.code; // Update the html
+
+      d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#msg").html(country.code); // Overlay the selected country
+
+      map = textureCache(country.code, '#AAA');
+      material = new three__WEBPACK_IMPORTED_MODULE_1__["MeshPhongMaterial"]({
+        map: map,
+        transparent: true
+      });
+
+      if (!overlay) {
+        overlay = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](new three__WEBPACK_IMPORTED_MODULE_1__["SphereGeometry"](102, 40, 40), material);
+        overlay.rotation.y = Math.PI;
+        root.add(overlay);
+      } else {
+        overlay.material = material;
+      }
+    }
+  }
+
+  Object(_helpers_eventSetup__WEBPACK_IMPORTED_MODULE_5__["setEvents"])(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"], [baseGlobe], 'click', 500);
+  Object(_helpers_eventSetup__WEBPACK_IMPORTED_MODULE_5__["setEvents"])(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"], [baseGlobe], 'mousemove', 2);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["controls"].update();
+  _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["renderer"].render(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["scene"], _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_4__["camera"]);
+}
+
+animate(); //     let ignoredNames = {};
 //     ignoredNames['Bosnia and Herzegovina'] = 'found';
 //     ignoredNames['Central African Republic'] = 'found';
 //     ignoredNames['Congo (Kinshasa)'] = 'found';
@@ -371,13 +1042,6 @@ d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/worldData.json').then(function 
 //     ignoredNames['South Sudan'] = 'found';
 //     ignoredNames['Dominican Republic'] = 'found';
 //     ignoredNames['Ivory Coast'] = 'found';
-//     happyNames.map(country => {
-//       if (!geoMap[country] && ignoredNames[country] != 'found') uniqueElements['happy'].push(country);
-//     })
-//     geoNames.map(country => {
-//       if (!happyMap[country]) uniqueElements['geo'].push(country);
-//     })
-//     console.log(uniqueElements);
 //     //Angola --> No Data
 //     //Antartica --> No Data
 //     //Fr. S. Antartic Lands --> No Data
@@ -403,21 +1067,6 @@ d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/worldData.json').then(function 
 //     //Suriname --> No Data
 //     //Timor-Leste --> No Data
 //     //Vanuatu --> No Data
-//     //Bosnia and Herz. --> Bosnia and Herzegovina
-//     //Central African Rep. --> Central African Republic
-//     //Cote d'Ivoire --> Ivory Coast
-//     //Dem Rep. Congo --> Congo (Kinshasa)
-//     //Dominican Rep. --> Dominican Republic
-//     //Congo --> Congo (Brazzaville)
-//     //Czech Rep. --> Czech Republic
-//     //N. Cyprus --> Northern Cyprus
-//     //Korea --> South Korea
-//     //Lao PDR --> Laos
-//     //Palestine --> Palestinian Territories
-//     //Puerto Rico --> United States
-//     //S. Sudan --> South Sudan
-//   })
-// })
 
 /***/ }),
 
@@ -79179,6 +79828,1196 @@ if ( typeof __THREE_DEVTOOLS__ !== 'undefined' ) {
 	/* eslint-enable no-undef */
 
 }
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/three/examples/jsm/controls/OrbitControls.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/three/examples/jsm/controls/OrbitControls.js ***!
+  \*******************************************************************/
+/*! exports provided: OrbitControls, MapControls */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OrbitControls", function() { return OrbitControls; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MapControls", function() { return MapControls; });
+/* harmony import */ var _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../build/three.module.js */ "./node_modules/three/build/three.module.js");
+/**
+ * @author qiao / https://github.com/qiao
+ * @author mrdoob / http://mrdoob.com
+ * @author alteredq / http://alteredqualia.com/
+ * @author WestLangley / http://github.com/WestLangley
+ * @author erich666 / http://erichaines.com
+ * @author ScieCode / http://github.com/sciecode
+ */
+
+
+
+// This set of controls performs orbiting, dollying (zooming), and panning.
+// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
+//
+//    Orbit - left mouse / touch: one-finger move
+//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
+//    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
+
+var OrbitControls = function ( object, domElement ) {
+
+	this.object = object;
+
+	this.domElement = ( domElement !== undefined ) ? domElement : document;
+
+	// Set to false to disable this control
+	this.enabled = true;
+
+	// "target" sets the location of focus, where the object orbits around
+	this.target = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+
+	// How far you can dolly in and out ( PerspectiveCamera only )
+	this.minDistance = 0;
+	this.maxDistance = Infinity;
+
+	// How far you can zoom in and out ( OrthographicCamera only )
+	this.minZoom = 0;
+	this.maxZoom = Infinity;
+
+	// How far you can orbit vertically, upper and lower limits.
+	// Range is 0 to Math.PI radians.
+	this.minPolarAngle = 0; // radians
+	this.maxPolarAngle = Math.PI; // radians
+
+	// How far you can orbit horizontally, upper and lower limits.
+	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
+	this.minAzimuthAngle = - Infinity; // radians
+	this.maxAzimuthAngle = Infinity; // radians
+
+	// Set to true to enable damping (inertia)
+	// If damping is enabled, you must call controls.update() in your animation loop
+	this.enableDamping = false;
+	this.dampingFactor = 0.05;
+
+	// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
+	// Set to false to disable zooming
+	this.enableZoom = true;
+	this.zoomSpeed = 1.0;
+
+	// Set to false to disable rotating
+	this.enableRotate = true;
+	this.rotateSpeed = 1.0;
+
+	// Set to false to disable panning
+	this.enablePan = true;
+	this.panSpeed = 1.0;
+	this.screenSpacePanning = false; // if true, pan in screen-space
+	this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
+
+	// Set to true to automatically rotate around the target
+	// If auto-rotate is enabled, you must call controls.update() in your animation loop
+	this.autoRotate = false;
+	this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
+
+	// Set to false to disable use of the keys
+	this.enableKeys = true;
+
+	// The four arrow keys
+	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+
+	// Mouse buttons
+	this.mouseButtons = { LEFT: _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].ROTATE, MIDDLE: _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].DOLLY, RIGHT: _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].PAN };
+
+	// Touch fingers
+	this.touches = { ONE: _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].ROTATE, TWO: _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].DOLLY_PAN };
+
+	// for reset
+	this.target0 = this.target.clone();
+	this.position0 = this.object.position.clone();
+	this.zoom0 = this.object.zoom;
+
+	//
+	// public methods
+	//
+
+	this.getPolarAngle = function () {
+
+		return spherical.phi;
+
+	};
+
+	this.getAzimuthalAngle = function () {
+
+		return spherical.theta;
+
+	};
+
+	this.saveState = function () {
+
+		scope.target0.copy( scope.target );
+		scope.position0.copy( scope.object.position );
+		scope.zoom0 = scope.object.zoom;
+
+	};
+
+	this.reset = function () {
+
+		scope.target.copy( scope.target0 );
+		scope.object.position.copy( scope.position0 );
+		scope.object.zoom = scope.zoom0;
+
+		scope.object.updateProjectionMatrix();
+		scope.dispatchEvent( changeEvent );
+
+		scope.update();
+
+		state = STATE.NONE;
+
+	};
+
+	// this method is exposed, but perhaps it would be better if we can make it private...
+	this.update = function () {
+
+		var offset = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+
+		// so camera.up is the orbit axis
+		var quat = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Quaternion"]().setFromUnitVectors( object.up, new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]( 0, 1, 0 ) );
+		var quatInverse = quat.clone().inverse();
+
+		var lastPosition = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+		var lastQuaternion = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Quaternion"]();
+
+		return function update() {
+
+			var position = scope.object.position;
+
+			offset.copy( position ).sub( scope.target );
+
+			// rotate offset to "y-axis-is-up" space
+			offset.applyQuaternion( quat );
+
+			// angle from z-axis around y-axis
+			spherical.setFromVector3( offset );
+
+			if ( scope.autoRotate && state === STATE.NONE ) {
+
+				rotateLeft( getAutoRotationAngle() );
+
+			}
+
+			if ( scope.enableDamping ) {
+
+				spherical.theta += sphericalDelta.theta * scope.dampingFactor;
+				spherical.phi += sphericalDelta.phi * scope.dampingFactor;
+
+			} else {
+
+				spherical.theta += sphericalDelta.theta;
+				spherical.phi += sphericalDelta.phi;
+
+			}
+
+			// restrict theta to be between desired limits
+			spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
+
+			// restrict phi to be between desired limits
+			spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
+
+			spherical.makeSafe();
+
+
+			spherical.radius *= scale;
+
+			// restrict radius to be between desired limits
+			spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
+
+			// move target to panned location
+
+			if ( scope.enableDamping === true ) {
+
+				scope.target.addScaledVector( panOffset, scope.dampingFactor );
+
+			} else {
+
+				scope.target.add( panOffset );
+
+			}
+
+			offset.setFromSpherical( spherical );
+
+			// rotate offset back to "camera-up-vector-is-up" space
+			offset.applyQuaternion( quatInverse );
+
+			position.copy( scope.target ).add( offset );
+
+			scope.object.lookAt( scope.target );
+
+			if ( scope.enableDamping === true ) {
+
+				sphericalDelta.theta *= ( 1 - scope.dampingFactor );
+				sphericalDelta.phi *= ( 1 - scope.dampingFactor );
+
+				panOffset.multiplyScalar( 1 - scope.dampingFactor );
+
+			} else {
+
+				sphericalDelta.set( 0, 0, 0 );
+
+				panOffset.set( 0, 0, 0 );
+
+			}
+
+			scale = 1;
+
+			// update condition is:
+			// min(camera displacement, camera rotation in radians)^2 > EPS
+			// using small-angle approximation cos(x/2) = 1 - x^2 / 8
+
+			if ( zoomChanged ||
+				lastPosition.distanceToSquared( scope.object.position ) > EPS ||
+				8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
+
+				scope.dispatchEvent( changeEvent );
+
+				lastPosition.copy( scope.object.position );
+				lastQuaternion.copy( scope.object.quaternion );
+				zoomChanged = false;
+
+				return true;
+
+			}
+
+			return false;
+
+		};
+
+	}();
+
+	this.dispose = function () {
+
+		scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
+		scope.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+		scope.domElement.removeEventListener( 'wheel', onMouseWheel, false );
+
+		scope.domElement.removeEventListener( 'touchstart', onTouchStart, false );
+		scope.domElement.removeEventListener( 'touchend', onTouchEnd, false );
+		scope.domElement.removeEventListener( 'touchmove', onTouchMove, false );
+
+		document.removeEventListener( 'mousemove', onMouseMove, false );
+		document.removeEventListener( 'mouseup', onMouseUp, false );
+
+		window.removeEventListener( 'keydown', onKeyDown, false );
+
+		//scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
+
+	};
+
+	//
+	// internals
+	//
+
+	var scope = this;
+
+	var changeEvent = { type: 'change' };
+	var startEvent = { type: 'start' };
+	var endEvent = { type: 'end' };
+
+	var STATE = {
+		NONE: - 1,
+		ROTATE: 0,
+		DOLLY: 1,
+		PAN: 2,
+		TOUCH_ROTATE: 3,
+		TOUCH_PAN: 4,
+		TOUCH_DOLLY_PAN: 5,
+		TOUCH_DOLLY_ROTATE: 6
+	};
+
+	var state = STATE.NONE;
+
+	var EPS = 0.000001;
+
+	// current position in spherical coordinates
+	var spherical = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Spherical"]();
+	var sphericalDelta = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Spherical"]();
+
+	var scale = 1;
+	var panOffset = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+	var zoomChanged = false;
+
+	var rotateStart = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+	var rotateEnd = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+	var rotateDelta = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+
+	var panStart = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+	var panEnd = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+	var panDelta = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+
+	var dollyStart = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+	var dollyEnd = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+	var dollyDelta = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector2"]();
+
+	function getAutoRotationAngle() {
+
+		return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
+
+	}
+
+	function getZoomScale() {
+
+		return Math.pow( 0.95, scope.zoomSpeed );
+
+	}
+
+	function rotateLeft( angle ) {
+
+		sphericalDelta.theta -= angle;
+
+	}
+
+	function rotateUp( angle ) {
+
+		sphericalDelta.phi -= angle;
+
+	}
+
+	var panLeft = function () {
+
+		var v = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+
+		return function panLeft( distance, objectMatrix ) {
+
+			v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
+			v.multiplyScalar( - distance );
+
+			panOffset.add( v );
+
+		};
+
+	}();
+
+	var panUp = function () {
+
+		var v = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+
+		return function panUp( distance, objectMatrix ) {
+
+			if ( scope.screenSpacePanning === true ) {
+
+				v.setFromMatrixColumn( objectMatrix, 1 );
+
+			} else {
+
+				v.setFromMatrixColumn( objectMatrix, 0 );
+				v.crossVectors( scope.object.up, v );
+
+			}
+
+			v.multiplyScalar( distance );
+
+			panOffset.add( v );
+
+		};
+
+	}();
+
+	// deltaX and deltaY are in pixels; right and down are positive
+	var pan = function () {
+
+		var offset = new _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["Vector3"]();
+
+		return function pan( deltaX, deltaY ) {
+
+			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+
+			if ( scope.object.isPerspectiveCamera ) {
+
+				// perspective
+				var position = scope.object.position;
+				offset.copy( position ).sub( scope.target );
+				var targetDistance = offset.length();
+
+				// half of the fov is center to top of screen
+				targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
+
+				// we use only clientHeight here so aspect ratio does not distort speed
+				panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix );
+				panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix );
+
+			} else if ( scope.object.isOrthographicCamera ) {
+
+				// orthographic
+				panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix );
+				panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix );
+
+			} else {
+
+				// camera neither orthographic nor perspective
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
+				scope.enablePan = false;
+
+			}
+
+		};
+
+	}();
+
+	function dollyIn( dollyScale ) {
+
+		if ( scope.object.isPerspectiveCamera ) {
+
+			scale /= dollyScale;
+
+		} else if ( scope.object.isOrthographicCamera ) {
+
+			scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom * dollyScale ) );
+			scope.object.updateProjectionMatrix();
+			zoomChanged = true;
+
+		} else {
+
+			console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+			scope.enableZoom = false;
+
+		}
+
+	}
+
+	function dollyOut( dollyScale ) {
+
+		if ( scope.object.isPerspectiveCamera ) {
+
+			scale *= dollyScale;
+
+		} else if ( scope.object.isOrthographicCamera ) {
+
+			scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom / dollyScale ) );
+			scope.object.updateProjectionMatrix();
+			zoomChanged = true;
+
+		} else {
+
+			console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+			scope.enableZoom = false;
+
+		}
+
+	}
+
+	//
+	// event callbacks - update the object state
+	//
+
+	function handleMouseDownRotate( event ) {
+
+		rotateStart.set( event.clientX, event.clientY );
+
+	}
+
+	function handleMouseDownDolly( event ) {
+
+		dollyStart.set( event.clientX, event.clientY );
+
+	}
+
+	function handleMouseDownPan( event ) {
+
+		panStart.set( event.clientX, event.clientY );
+
+	}
+
+	function handleMouseMoveRotate( event ) {
+
+		rotateEnd.set( event.clientX, event.clientY );
+
+		rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+
+		rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+		rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+		rotateStart.copy( rotateEnd );
+
+		scope.update();
+
+	}
+
+	function handleMouseMoveDolly( event ) {
+
+		dollyEnd.set( event.clientX, event.clientY );
+
+		dollyDelta.subVectors( dollyEnd, dollyStart );
+
+		if ( dollyDelta.y > 0 ) {
+
+			dollyIn( getZoomScale() );
+
+		} else if ( dollyDelta.y < 0 ) {
+
+			dollyOut( getZoomScale() );
+
+		}
+
+		dollyStart.copy( dollyEnd );
+
+		scope.update();
+
+	}
+
+	function handleMouseMovePan( event ) {
+
+		panEnd.set( event.clientX, event.clientY );
+
+		panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+		pan( panDelta.x, panDelta.y );
+
+		panStart.copy( panEnd );
+
+		scope.update();
+
+	}
+
+	function handleMouseUp( /*event*/ ) {
+
+		// no-op
+
+	}
+
+	function handleMouseWheel( event ) {
+
+		if ( event.deltaY < 0 ) {
+
+			dollyOut( getZoomScale() );
+
+		} else if ( event.deltaY > 0 ) {
+
+			dollyIn( getZoomScale() );
+
+		}
+
+		scope.update();
+
+	}
+
+	function handleKeyDown( event ) {
+
+		var needsUpdate = false;
+
+		switch ( event.keyCode ) {
+
+			case scope.keys.UP:
+				pan( 0, scope.keyPanSpeed );
+				needsUpdate = true;
+				break;
+
+			case scope.keys.BOTTOM:
+				pan( 0, - scope.keyPanSpeed );
+				needsUpdate = true;
+				break;
+
+			case scope.keys.LEFT:
+				pan( scope.keyPanSpeed, 0 );
+				needsUpdate = true;
+				break;
+
+			case scope.keys.RIGHT:
+				pan( - scope.keyPanSpeed, 0 );
+				needsUpdate = true;
+				break;
+
+		}
+
+		if ( needsUpdate ) {
+
+			// prevent the browser from scrolling on cursor keys
+			event.preventDefault();
+
+			scope.update();
+
+		}
+
+
+	}
+
+	function handleTouchStartRotate( event ) {
+
+		if ( event.touches.length == 1 ) {
+
+			rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+		} else {
+
+			var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+			var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+			rotateStart.set( x, y );
+
+		}
+
+	}
+
+	function handleTouchStartPan( event ) {
+
+		if ( event.touches.length == 1 ) {
+
+			panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+		} else {
+
+			var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+			var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+			panStart.set( x, y );
+
+		}
+
+	}
+
+	function handleTouchStartDolly( event ) {
+
+		var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+		var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+
+		var distance = Math.sqrt( dx * dx + dy * dy );
+
+		dollyStart.set( 0, distance );
+
+	}
+
+	function handleTouchStartDollyPan( event ) {
+
+		if ( scope.enableZoom ) handleTouchStartDolly( event );
+
+		if ( scope.enablePan ) handleTouchStartPan( event );
+
+	}
+
+	function handleTouchStartDollyRotate( event ) {
+
+		if ( scope.enableZoom ) handleTouchStartDolly( event );
+
+		if ( scope.enableRotate ) handleTouchStartRotate( event );
+
+	}
+
+	function handleTouchMoveRotate( event ) {
+
+		if ( event.touches.length == 1 ) {
+
+			rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+		} else {
+
+			var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+			var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+			rotateEnd.set( x, y );
+
+		}
+
+		rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+
+		rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+		rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+		rotateStart.copy( rotateEnd );
+
+	}
+
+	function handleTouchMovePan( event ) {
+
+		if ( event.touches.length == 1 ) {
+
+			panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+		} else {
+
+			var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+			var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+			panEnd.set( x, y );
+
+		}
+
+		panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+		pan( panDelta.x, panDelta.y );
+
+		panStart.copy( panEnd );
+
+	}
+
+	function handleTouchMoveDolly( event ) {
+
+		var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+		var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+
+		var distance = Math.sqrt( dx * dx + dy * dy );
+
+		dollyEnd.set( 0, distance );
+
+		dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );
+
+		dollyIn( dollyDelta.y );
+
+		dollyStart.copy( dollyEnd );
+
+	}
+
+	function handleTouchMoveDollyPan( event ) {
+
+		if ( scope.enableZoom ) handleTouchMoveDolly( event );
+
+		if ( scope.enablePan ) handleTouchMovePan( event );
+
+	}
+
+	function handleTouchMoveDollyRotate( event ) {
+
+		if ( scope.enableZoom ) handleTouchMoveDolly( event );
+
+		if ( scope.enableRotate ) handleTouchMoveRotate( event );
+
+	}
+
+	function handleTouchEnd( /*event*/ ) {
+
+		// no-op
+
+	}
+
+	//
+	// event handlers - FSM: listen for events and reset state
+	//
+
+	function onMouseDown( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		// Prevent the browser from scrolling.
+
+		event.preventDefault();
+
+		// Manually set the focus since calling preventDefault above
+		// prevents the browser from setting it automatically.
+
+		scope.domElement.focus ? scope.domElement.focus() : window.focus();
+
+		switch ( event.button ) {
+
+			case 0:
+
+				switch ( scope.mouseButtons.LEFT ) {
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].ROTATE:
+
+						if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+							if ( scope.enablePan === false ) return;
+
+							handleMouseDownPan( event );
+
+							state = STATE.PAN;
+
+						} else {
+
+							if ( scope.enableRotate === false ) return;
+
+							handleMouseDownRotate( event );
+
+							state = STATE.ROTATE;
+
+						}
+
+						break;
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].PAN:
+
+						if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+							if ( scope.enableRotate === false ) return;
+
+							handleMouseDownRotate( event );
+
+							state = STATE.ROTATE;
+
+						} else {
+
+							if ( scope.enablePan === false ) return;
+
+							handleMouseDownPan( event );
+
+							state = STATE.PAN;
+
+						}
+
+						break;
+
+					default:
+
+						state = STATE.NONE;
+
+				}
+
+				break;
+
+
+			case 1:
+
+				switch ( scope.mouseButtons.MIDDLE ) {
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].DOLLY:
+
+						if ( scope.enableZoom === false ) return;
+
+						handleMouseDownDolly( event );
+
+						state = STATE.DOLLY;
+
+						break;
+
+
+					default:
+
+						state = STATE.NONE;
+
+				}
+
+				break;
+
+			case 2:
+
+				switch ( scope.mouseButtons.RIGHT ) {
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].ROTATE:
+
+						if ( scope.enableRotate === false ) return;
+
+						handleMouseDownRotate( event );
+
+						state = STATE.ROTATE;
+
+						break;
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].PAN:
+
+						if ( scope.enablePan === false ) return;
+
+						handleMouseDownPan( event );
+
+						state = STATE.PAN;
+
+						break;
+
+					default:
+
+						state = STATE.NONE;
+
+				}
+
+				break;
+
+		}
+
+		if ( state !== STATE.NONE ) {
+
+			document.addEventListener( 'mousemove', onMouseMove, false );
+			document.addEventListener( 'mouseup', onMouseUp, false );
+
+			scope.dispatchEvent( startEvent );
+
+		}
+
+	}
+
+	function onMouseMove( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		event.preventDefault();
+
+		switch ( state ) {
+
+			case STATE.ROTATE:
+
+				if ( scope.enableRotate === false ) return;
+
+				handleMouseMoveRotate( event );
+
+				break;
+
+			case STATE.DOLLY:
+
+				if ( scope.enableZoom === false ) return;
+
+				handleMouseMoveDolly( event );
+
+				break;
+
+			case STATE.PAN:
+
+				if ( scope.enablePan === false ) return;
+
+				handleMouseMovePan( event );
+
+				break;
+
+		}
+
+	}
+
+	function onMouseUp( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		handleMouseUp( event );
+
+		document.removeEventListener( 'mousemove', onMouseMove, false );
+		document.removeEventListener( 'mouseup', onMouseUp, false );
+
+		scope.dispatchEvent( endEvent );
+
+		state = STATE.NONE;
+
+	}
+
+	function onMouseWheel( event ) {
+
+		if ( scope.enabled === false || scope.enableZoom === false || ( state !== STATE.NONE && state !== STATE.ROTATE ) ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		scope.dispatchEvent( startEvent );
+
+		handleMouseWheel( event );
+
+		scope.dispatchEvent( endEvent );
+
+	}
+
+	function onKeyDown( event ) {
+
+		if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
+
+		handleKeyDown( event );
+
+	}
+
+	function onTouchStart( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		event.preventDefault();
+
+		switch ( event.touches.length ) {
+
+			case 1:
+
+				switch ( scope.touches.ONE ) {
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].ROTATE:
+
+						if ( scope.enableRotate === false ) return;
+
+						handleTouchStartRotate( event );
+
+						state = STATE.TOUCH_ROTATE;
+
+						break;
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].PAN:
+
+						if ( scope.enablePan === false ) return;
+
+						handleTouchStartPan( event );
+
+						state = STATE.TOUCH_PAN;
+
+						break;
+
+					default:
+
+						state = STATE.NONE;
+
+				}
+
+				break;
+
+			case 2:
+
+				switch ( scope.touches.TWO ) {
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].DOLLY_PAN:
+
+						if ( scope.enableZoom === false && scope.enablePan === false ) return;
+
+						handleTouchStartDollyPan( event );
+
+						state = STATE.TOUCH_DOLLY_PAN;
+
+						break;
+
+					case _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].DOLLY_ROTATE:
+
+						if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+
+						handleTouchStartDollyRotate( event );
+
+						state = STATE.TOUCH_DOLLY_ROTATE;
+
+						break;
+
+					default:
+
+						state = STATE.NONE;
+
+				}
+
+				break;
+
+			default:
+
+				state = STATE.NONE;
+
+		}
+
+		if ( state !== STATE.NONE ) {
+
+			scope.dispatchEvent( startEvent );
+
+		}
+
+	}
+
+	function onTouchMove( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		switch ( state ) {
+
+			case STATE.TOUCH_ROTATE:
+
+				if ( scope.enableRotate === false ) return;
+
+				handleTouchMoveRotate( event );
+
+				scope.update();
+
+				break;
+
+			case STATE.TOUCH_PAN:
+
+				if ( scope.enablePan === false ) return;
+
+				handleTouchMovePan( event );
+
+				scope.update();
+
+				break;
+
+			case STATE.TOUCH_DOLLY_PAN:
+
+				if ( scope.enableZoom === false && scope.enablePan === false ) return;
+
+				handleTouchMoveDollyPan( event );
+
+				scope.update();
+
+				break;
+
+			case STATE.TOUCH_DOLLY_ROTATE:
+
+				if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+
+				handleTouchMoveDollyRotate( event );
+
+				scope.update();
+
+				break;
+
+			default:
+
+				state = STATE.NONE;
+
+		}
+
+	}
+
+	function onTouchEnd( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		handleTouchEnd( event );
+
+		scope.dispatchEvent( endEvent );
+
+		state = STATE.NONE;
+
+	}
+
+	function onContextMenu( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		event.preventDefault();
+
+	}
+
+	//
+
+	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
+
+	scope.domElement.addEventListener( 'mousedown', onMouseDown, false );
+	scope.domElement.addEventListener( 'wheel', onMouseWheel, false );
+
+	scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
+	scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
+	scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
+
+	window.addEventListener( 'keydown', onKeyDown, false );
+
+	// force an update at start
+
+	this.update();
+
+};
+
+OrbitControls.prototype = Object.create( _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["EventDispatcher"].prototype );
+OrbitControls.prototype.constructor = OrbitControls;
+
+
+// This set of controls performs orbiting, dollying (zooming), and panning.
+// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
+// This is very similar to OrbitControls, another set of touch behavior
+//
+//    Orbit - right mouse, or left mouse + ctrl/meta/shiftKey / touch: two-finger rotate
+//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
+//    Pan - left mouse, or arrow keys / touch: one-finger move
+
+var MapControls = function ( object, domElement ) {
+
+	OrbitControls.call( this, object, domElement );
+
+	this.mouseButtons.LEFT = _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].PAN;
+	this.mouseButtons.RIGHT = _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["MOUSE"].ROTATE;
+
+	this.touches.ONE = _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].PAN;
+	this.touches.TWO = _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["TOUCH"].DOLLY_ROTATE;
+
+};
+
+MapControls.prototype = Object.create( _build_three_module_js__WEBPACK_IMPORTED_MODULE_0__["EventDispatcher"].prototype );
+MapControls.prototype.constructor = MapControls;
 
 
 

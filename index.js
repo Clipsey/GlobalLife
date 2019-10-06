@@ -2,175 +2,39 @@ import * as d3 from 'd3';
 import * as THREE from 'three';
 import * as topojson from 'topojson-client';
 import { createMapTexture } from './helpers/canvasSetup';
-import { scene, camera, renderer } from './helpers/sceneSetup';
+import { scene, camera, renderer, controls } from './helpers/sceneSetup';
+import { setEvents } from './helpers/eventSetup';
+import { convertToXYZ, getEventCenter, geodecoder } from './helpers/worldEvents';
+import { getTween, memoize } from './helpers/generalSetup';
+import { displayOne, countriesData } from './graphs/one';
+import { displayTwo } from './graphs/two';
+import { displayThree } from './graphs/three';
 
-const dataKeys = {
-  xName: 'Country (region)',
-  yNames:
-    [
-      'Corruption', 'Country (region)', 'Freedom', 'Generosity',
-      'Health life expectancy', 'Ladder', 'Log of GDP per capita',
-      'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support'
-    ],
-}
+export const randomData = {};
+d3.json('../Misc/countriesOfTheWorld.json').then((countryData) => {
 
-const svg = d3.select('.canvas')
-  .append('svg')
-  .attr('width', 600)
-  .attr('height', 600)
-
-// create margins and dimensions
-const margin = { top: 20, right: 20, bottom: 100, left: 100 };
-const graphWidth = 600 - margin.left - margin.right;
-const graphHeight = 600 - margin.top - margin.bottom;
-
-const graph = svg.append('g')
-  .attr('width', graphWidth)
-  .attr('height', graphHeight)
-  .attr('transform', `translate(${margin.left}, ${margin.top})`)
-
-const xAxisGroup = graph.append('g')
-  .attr('transform', `translate(0, ${graphHeight})`)
-const yAxisGroup = graph.append('g');
-
-// Scales
-const y = d3.scaleLinear()
-  .range([graphHeight, 0])
-
-const x = d3.scaleBand()
-  .range([0, 500])
-  .paddingInner(0.2)
-  .paddingOuter(0.2);
-
-const title =  graph.append('text')
-  .attr('y', 0)
-  .attr('x', 250)
-  .text('Test')
-
-const xAxis = d3.axisBottom(x);
-const yAxis = d3.axisLeft(y)
-  .ticks(3)
-  .tickFormat(d => d + ' Rank')
-
-xAxisGroup.selectAll('text')
-  .attr('transform', `rotate(-40)`)
-  .attr('text-anchor', 'start')
-  .attr('fill', 'blue')
-
-const display = (country) => {
-  const data = Object.assign({}, country);
-  const countryName = data['Country (region)'];
-  delete data['Country (region)'];
-
-  const barsKeys = Object.keys(data);
-  const barsValues = Object.values(data);
-
-  const bars = []
-  barsKeys.forEach((key, idx) => {
-    bars[idx] = {name: barsKeys[idx], value: barsValues[idx]}
-  });
-
-
-  // 156 total countries are evaluated, so the maximum is the lowest rated country
-  y.domain([0, 156]);
-
-  // Number of categories defines the 
-  x.domain(barsKeys);
-
-  // Tie data to the rects available
-  const rects = graph.selectAll('rect').data(bars);
-  rects.exit().remove();
-
-  rects
-    .attr('width', x.bandwidth)
-    .attr('fill', 'blue')
-    .attr('x', d => x(d.name))
-    // .transition().duration(1000)
-    //   .attr('y', d => y(d.value))
-    //   .attr('height', d => graphHeight - y(d.value));
-
-  // return;
-  rects.enter()
-    .append("rect")
-    .attr("width", x.bandwidth)
-    .attr("height", 0)
-    .attr("fill", "blue")
-    .attr('x', d => x(d.name))
-    .attr('y', graphHeight)
-    .merge(rects) // Everything called below merge affects both entered and currently existing elements
-    .transition().duration(1500)
-      .attr('y', d => y(d.value))
-      .attr('height', d => graphHeight - y(d.value));
-
-  xAxisGroup.call(xAxis);
-  yAxisGroup.call(yAxis);
-
-  xAxisGroup.selectAll('text')
-    .attr('transform', `rotate(-40)`)
-    .attr('text-anchor', 'end')
-    .attr('fill', 'blue')
-
-  title.text(`${countryName}`)
-}
-
-let countries = {};
-
-
-d3.json('../Misc/2019.json').then((data) => {
-  console.log(data);
-  data.countries.forEach(country => {
-    countries[country['Country (region)']] = country;
+  countryData.forEach(country => {
+    randomData[country.Country] = country;
   })
 
-  const countryNames = Object.keys(countries);
+  randomData['Bahamas'] = randomData['Bahamas, The'];
+  randomData['Bosnia and Herz.'] = randomData['Bosnia & Herzegovina'];
+  randomData["Côte d'Ivoire"] = randomData["Cote d'Ivoire"];
+  randomData['Dem. Rep. Congo'] = randomData["Congo, Dem. Rep."];
+  randomData['Congo'] = randomData["Congo, Repub. of the"];
+  randomData['N. Cyprus'] = randomData['Cyprus'];
+  randomData['Czech Rep.'] = randomData['Czech Republic'];
+  randomData['Dominican Rep.'] = randomData['Dominican Republic'];
+  randomData["Eq. Guinea"] = randomData['Equatorial Guinea']
+  randomData['Korea'] = randomData['Korea, North'];
+  randomData['Lao PDR'] = randomData['Laos'];
+  randomData['Dem. Rep. Korea'] = randomData["Korea, North"];
+  randomData['W. Sahara'] = randomData["Western Sahara"];
+  randomData["Solomon Islands"] = randomData['Solomon Is.'];
+  randomData['Timor-Leste'] = randomData["East Timor"];
+  randomData["Trinidad and Tobago"] = randomData['Trinidad & Tobago'];
 
-  console.log(countryNames);
-  const displayLoop = () => {
-    const randomIndex = Math.floor(Math.random() * 156);
-    display(countries[countryNames[randomIndex]]);
-  }
-  displayLoop();
-
-  setInterval(displayLoop, 3000);
 });
-
-// Data from firebase -- Continously
-// db.collection('countries').onSnapshot( res => {
-
-//   res.docChanges().forEach( change => {
-//     const doc = { ...change.doc.data() };
-
-//     switch(change.type) {
-//       case 'added':
-//         countries[doc['Country (region)']] = doc;
-//         break;
-//       default:
-//         break;
-//     }
-//   })
-
-//   const countryNames = Object.keys(countries);
-//   const displayLoop = () => {
-//     const randomIndex = Math.floor(Math.random() * 156);
-//     display(countries[countryNames[randomIndex]]);
-//   }
-//   displayLoop();
-
-//   setInterval(displayLoop, 3000);
-// });
-
-
-
-// 
-
-// TWEENS
-const widthTween = (d) => {
-  let i = d3.interpolate(0, x.bandwidth());
-
-  return function(t) {
-    return i(t);
-  }
-}
 
 
 /* ---------------------------  */
@@ -178,64 +42,142 @@ const widthTween = (d) => {
 // Load total mapping, should scale based on screen size
 d3.json('../Misc/worldData.json').then((data) => {
 
+  let currentCountry, overlay;
+
+  const segments = 500;
+  const globeSize = 100;
+
   // GeoJSON conversion from countries data in topology 'data'
-  const countriesTopoToGeo = topojson.feature(data, data.objects.countries);
+  const countries = topojson.feature(data, data.objects.countries);
+  const geo = geodecoder(countries);
 
-  // Important: MeshBasicMaterial is not affected by light source -- Water Color
-  let waterMaterial = new THREE.MeshBasicMaterial({ color: '#0077be' });
-  // Radius, widthSegments, heightSegments
-  // Size of Sphere for first parameter
-  // How many vertical and horizontal lines are drawn
-  let sphere = new THREE.SphereGeometry(200, 100, 100);
-  let baseLayer = new THREE.Mesh(sphere, waterMaterial); // A
+  const textureCache = memoize( function(countryID, color) {
+    let country = geo.find(countryID);
+    return createMapTexture(country, color);
+  });
 
-  // Texture for the countries, defines borders/land
-  let mapTexture = createMapTexture(countriesTopoToGeo, '#fff');
 
-  // Transparence is needed here, otherwise the ocean will take the mapTexture color
-  let mapMaterial = new THREE.MeshBasicMaterial({ map: mapTexture, transparent: true });  //C
-  let mapLayer = new THREE.Mesh(sphere, mapMaterial); //D
+  // Base globe with blue "water"
+  let blueMaterial = new THREE.MeshPhongMaterial({ color: '#000', transparent: true });
+  let sphere = new THREE.SphereGeometry(globeSize, segments, segments);
+  let baseGlobe = new THREE.Mesh(sphere, blueMaterial);
+  baseGlobe.rotation.y = Math.PI;
+  baseGlobe.addEventListener('click', onGlobeClick);
+  baseGlobe.addEventListener('mousemove', onGlobeMousemove);
 
+  // add base map layer with all countries
+  let worldTexture = createMapTexture(countries, '#fff');
+  let mapMaterial = new THREE.MeshPhongMaterial({ map: worldTexture, transparent: true });
+  let baseMap = new THREE.Mesh(new THREE.SphereGeometry(globeSize, segments, segments), mapMaterial);
+  baseMap.rotation.y = Math.PI;
+
+  // var material = new THREE.MeshNormalMaterial();
+  // var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
+  // var sphere = new THREE.Mesh(sphereGeometry, material);
+  // sphere.position.set(-60, 55, 0);
+  // scene.add(sphere);
+  
+  var outlineMaterial = new THREE.MeshBasicMaterial({ color: '#fff', side: THREE.BackSide });
+  var outlineMesh = new THREE.Mesh(sphere, outlineMaterial);
+  outlineMesh.scale.multiplyScalar(1.01);
+
+  // create a container node and add the two meshes
   let root = new THREE.Object3D();
-  root.add(baseLayer);
-  root.add(mapLayer);
+  root.scale.set(2.5, 2.5, 2.5);
+  root.rotation.y = 0.02;
+  root.add(baseGlobe);
+  root.add(baseMap);
+  root.add(outlineMesh);
   scene.add(root);
 
-  function render() {
-    root.rotation.y += 0.005;
-    requestAnimationFrame(render);
-    renderer.render(scene, camera);
+
+  function onGlobeClick(event) {
+    console.log(currentCountry);
+
+    displayOne(countriesData[currentCountry]);
+    // console.log(randomData[currentCountry]);
+    displayTwo(currentCountry);
+    displayThree(currentCountry);
+    // console.log(controls.object.position);
+    // console.log(controls.object.quaternion);
+    // console.log(controls.object.rotation);
+
+    // Get pointc, convert to latitude/longitude
+    let latlng = getEventCenter.call(this, event);
+
+    let country = geo.search(latlng[0], latlng[1]);
+    if (country) {
+      controls.enabled = false;
+      const XYZLatLng = convertToXYZ(latlng);
+  
+      let initial = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
+      let end = {x: XYZLatLng.x * 10, y: XYZLatLng.y * 10, z: XYZLatLng.z * 10};  
+  
+      let interpol = d3.interpolateObject(initial, end);
+      const duration = 750;
+      let timer = d3.timer((t) => {
+        const newPos = interpol(t / duration);
+        camera.position.x = newPos.x;
+        camera.position.y = newPos.y;
+        camera.position.z = newPos.z;
+        if (t >= duration) {
+          controls.enabled = true;
+          timer.stop();
+          // const graphElement = document.getElementsByClassName('canvas')[0];
+          // console.log(graphElement);
+          // console.log(document.getSelection());
+          // console.log(document.getSelection().collapse)
+          
+          // document.getSelection().collapse(graphElement, 1);
+          // baseGlobe.dispatchEvent( new Event('mousemove'));
+        }
+  
+      })
+    }
+
   }
 
-  window.render = render;
-  render();
+  function onGlobeMousemove(event) {
+    let map, material;
+
+    // Get pointc, convert to latitude/longitude
+    let latlng = getEventCenter.call(this, event);
+    // console.log(latlng);
+
+    // Look for country at that latitude/longitude
+    let country = geo.search(latlng[0], latlng[1]);
+
+    if (country !== null && country.code !== currentCountry) {
+
+      // Track the current country displayed
+      currentCountry = country.code;
+
+      // Update the html
+      d3.select("#msg").html(country.code);
+
+      // Overlay the selected country
+      map = textureCache(country.code, '#AAA');
+      material = new THREE.MeshPhongMaterial({ map: map, transparent: true });
+      if (!overlay) {
+        overlay = new THREE.Mesh(new THREE.SphereGeometry(102, 40, 40), material);
+        overlay.rotation.y = Math.PI;
+        root.add(overlay);
+      } else {
+        overlay.material = material;
+      }
+    }
+  }
+
+  setEvents(camera, [baseGlobe], 'click', 500);
+  setEvents(camera, [baseGlobe], 'mousemove', 2);
 });
 
-
-
-// d3.json('./Misc/2019.json').then( happyData => {
-//   d3.json('worldData.json').then( geoData => {
-//     const happy = happyData.countries;
-//     const geo = geoData.objects.countries.geometries;
-
-//     const happyMap = {};
-//     const geoMap = {};
-  
-//     happy.forEach( country => {
-//       happyMap[country['Country (region)']] = true;
-//     });
-//     geo.forEach( country => {
-//       geoMap[country['id']] = true;
-//     });
-    
-
-//     const uniqueElements = {
-//       'happy': [],
-//       'geo': []
-//     };
-
-//     const happyNames = Object.keys(happyMap);
-//     const geoNames = Object.keys(geoMap);
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
 
 //     let ignoredNames = {};
 //     ignoredNames['Bosnia and Herzegovina'] = 'found';
@@ -251,16 +193,6 @@ d3.json('../Misc/worldData.json').then((data) => {
 //     ignoredNames['South Sudan'] = 'found';
 //     ignoredNames['Dominican Republic'] = 'found';
 //     ignoredNames['Ivory Coast'] = 'found';
-
-
-//     happyNames.map(country => {
-//       if (!geoMap[country] && ignoredNames[country] != 'found') uniqueElements['happy'].push(country);
-//     })
-//     geoNames.map(country => {
-//       if (!happyMap[country]) uniqueElements['geo'].push(country);
-//     })
-
-//     console.log(uniqueElements);
 
 //     //Angola --> No Data
 //     //Antartica --> No Data
@@ -287,21 +219,3 @@ d3.json('../Misc/worldData.json').then((data) => {
 //     //Suriname --> No Data
 //     //Timor-Leste --> No Data
 //     //Vanuatu --> No Data
-    
-//     //Bosnia and Herz. --> Bosnia and Herzegovina
-//     //Central African Rep. --> Central African Republic
-//     //Cote d'Ivoire --> Ivory Coast
-//     //Dem Rep. Congo --> Congo (Kinshasa)
-//     //Dominican Rep. --> Dominican Republic
-//     //Congo --> Congo (Brazzaville)
-//     //Czech Rep. --> Czech Republic
-//     //N. Cyprus --> Northern Cyprus
-//     //Korea --> South Korea
-//     //Lao PDR --> Laos
-//     //Palestine --> Palestinian Territories
-//     //Puerto Rico --> United States
-//     //S. Sudan --> South Sudan
-
-
-//   })
-// })
