@@ -1,5 +1,3 @@
-import * as d3 from 'd3';
-
 // Memoize and debounce pulled from WebGL Tutorial by Steven Hall
 // adapted from memoize.js by @philogb and @addyosmani
 export function memoize(fn) {

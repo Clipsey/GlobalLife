@@ -1,5 +1,3 @@
-import * as d3 from 'd3';
-
 const dataKeys = {
   xName: 'Country (region)',
   yNames:
@@ -15,7 +13,7 @@ const one = document.getElementById('one');
 const totalGraphWidth = one.clientWidth;
 const totalGraphHeight = one.clientHeight;
 // create margins and dimensions
-const margin = { top: 20, right: 20, bottom: 100, left: 5 };
+const margin = { top: 20, right: 20, bottom: 100, left: 20 };
 const graphWidth = totalGraphWidth - margin.left - margin.right;
 const graphHeight = totalGraphHeight - margin.top - margin.bottom;
 
@@ -122,10 +120,12 @@ export const displayOne = (country) => {
     .attr('transform', `rotate(-40)`)
     .attr('text-anchor', 'end')
     .attr('fill', 'white')
+    .style('font-size', '13px')
+    .style('font-family', 'sans-serif')
 
-  title.text(`${countryName}`)
-  d3.selectAll('text').attr('fill', 'white')
-  d3.selectAll('text').style('fill', 'white')
+  // title.text(`${countryName}`)
+  // d3.selectAll('text').attr('fill', 'white')
+  // d3.selectAll('text').style('fill', 'white')
 }
 
 export let countriesData = {};

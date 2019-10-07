@@ -1,4 +1,3 @@
-import * as d3 from 'd3';
 import * as THREE from 'three';
 import * as topojson from 'topojson-client';
 import { createMapTexture } from './helpers/canvasSetup';
@@ -7,8 +6,9 @@ import { setEvents } from './helpers/eventSetup';
 import { convertToXYZ, getEventCenter, geodecoder } from './helpers/worldEvents';
 import { getTween, memoize } from './helpers/generalSetup';
 import { displayOne, countriesData } from './graphs/one';
-import { displayTwo } from './graphs/two';
 import { displayThree } from './graphs/three';
+import { displayFour } from './graphs/four';
+import { displayFive } from './graphs/five';
 
 export const randomData = {};
 d3.json('../Misc/countriesOfTheWorld.json').then((countryData) => {
@@ -34,7 +34,35 @@ d3.json('../Misc/countriesOfTheWorld.json').then((countryData) => {
   randomData['Timor-Leste'] = randomData["East Timor"];
   randomData["Trinidad and Tobago"] = randomData['Trinidad & Tobago'];
 
+  // Agriculture / Industry / Service
+  // Arable (%) / Crops (%) / Other (%)
 });
+
+/*
+
+  const countryName = data['Country'];
+  delete data['Country'];
+  delete data['Agriculture'];
+  delete data['Climate'];
+  delete data['Coastline (coast/area ratio)'];
+  delete data['Crops (%)'];
+  delete data['GDP ($ per capita)'];
+  delete data['Industry'];
+  delete data['Literacy (%)'];
+  delete data['Infant mortality (per 1000 births)'];
+  delete data['Net migration'];
+  delete data['Other (%)'];
+  delete data['Phones (per 1000)'];
+  delete data['Pop. Density (per sq. mi.)'];
+  delete data['Population'];
+  delete data['Region'];
+  delete data['Service'];
+  delete data['Area (sq. mi.)'];
+  delete data['Arable (%)'];
+  delete data['Birthrate'];
+  delete data['Deathrate'];
+
+*/
 
 
 /* ---------------------------  */
@@ -57,10 +85,10 @@ d3.json('../Misc/worldData.json').then((data) => {
   });
 
 
-  // Base globe with blue "water"
-  let blueMaterial = new THREE.MeshPhongMaterial({ color: '#000', transparent: true });
+  // Base globe with black "water"
+  let oceanMaterial = new THREE.MeshPhongMaterial({ color: '#000', transparent: true });
   let sphere = new THREE.SphereGeometry(globeSize, segments, segments);
-  let baseGlobe = new THREE.Mesh(sphere, blueMaterial);
+  let baseGlobe = new THREE.Mesh(sphere, oceanMaterial);
   baseGlobe.rotation.y = Math.PI;
   baseGlobe.addEventListener('click', onGlobeClick);
   baseGlobe.addEventListener('mousemove', onGlobeMousemove);
@@ -85,13 +113,20 @@ d3.json('../Misc/worldData.json').then((data) => {
   root.add(outlineMesh);
   scene.add(root);
 
+  let currentOverlay = null;
+
 
   function onGlobeClick(event) {
     console.log(currentCountry);
 
+    const countryText = document.getElementById('country');
+    countryText.innerHTML = currentCountry;
+
+
     displayOne(countriesData[currentCountry]);
-    displayTwo(currentCountry);
     displayThree(currentCountry);
+    displayFour(currentCountry);
+    displayFive(currentCountry);
     // console.log(controls.object.position);
     // console.log(controls.object.quaternion);
     // console.log(controls.object.rotation);
@@ -146,9 +181,6 @@ d3.json('../Misc/worldData.json').then((data) => {
       // Track the current country displayed
       currentCountry = country.code;
 
-      // Update the html
-      d3.select("#msg").html(country.code);
-
       // Overlay the selected country
       map = textureCache(country.code, '#999');
       material = new THREE.MeshPhongMaterial({ map: map, transparent: true });
@@ -159,6 +191,24 @@ d3.json('../Misc/worldData.json').then((data) => {
       } else {
         overlay.material = material;
       }
+      currentOverlay = overlay;
+    } else {
+      // if (currentOverlay && country === null) {
+      //   console.log('remove');
+      //   // console.log(currentCountry, country.code);
+      //   // currentCountry = null;
+      //   // root.remove(currentOverlay);
+      //   currentOverlay.material.map = null;
+      //   currentOverlay.material.needsUpdate = true;
+      // }
+
+      // // if (!overlay) {
+      // //   overlay = new THREE.Mesh(new THREE.SphereGeometry(102, 40, 40), undefined);
+      // //   overlay.rotation.y = Math.PI;
+      // //   root.add(overlay);
+      // // } else {
+      // //   overlay.material = material;
+      // // }
     }
   }
 

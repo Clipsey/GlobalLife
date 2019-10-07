@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as d3 from 'd3';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export var canvas = d3.select("body").append("canvas")

@@ -1,6 +1,4 @@
-import * as d3 from 'd3';
 import * as THREE from 'three';
-
 const projection = d3.geoEquirectangular()
   .translate([1024, 512])
   .scale(325);
