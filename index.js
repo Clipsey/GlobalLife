@@ -71,12 +71,7 @@ d3.json('../Misc/worldData.json').then((data) => {
   let baseMap = new THREE.Mesh(new THREE.SphereGeometry(globeSize, segments, segments), mapMaterial);
   baseMap.rotation.y = Math.PI;
 
-  // var material = new THREE.MeshNormalMaterial();
-  // var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
-  // var sphere = new THREE.Mesh(sphereGeometry, material);
-  // sphere.position.set(-60, 55, 0);
-  // scene.add(sphere);
-  
+  // Outline Mesh on the globe, scalar represents thickness of border
   var outlineMaterial = new THREE.MeshBasicMaterial({ color: '#fff', side: THREE.BackSide });
   var outlineMesh = new THREE.Mesh(sphere, outlineMaterial);
   outlineMesh.scale.multiplyScalar(1.01);
@@ -95,7 +90,6 @@ d3.json('../Misc/worldData.json').then((data) => {
     console.log(currentCountry);
 
     displayOne(countriesData[currentCountry]);
-    // console.log(randomData[currentCountry]);
     displayTwo(currentCountry);
     displayThree(currentCountry);
     // console.log(controls.object.position);
@@ -156,7 +150,7 @@ d3.json('../Misc/worldData.json').then((data) => {
       d3.select("#msg").html(country.code);
 
       // Overlay the selected country
-      map = textureCache(country.code, '#AAA');
+      map = textureCache(country.code, '#999');
       material = new THREE.MeshPhongMaterial({ map: map, transparent: true });
       if (!overlay) {
         overlay = new THREE.Mesh(new THREE.SphereGeometry(102, 40, 40), material);

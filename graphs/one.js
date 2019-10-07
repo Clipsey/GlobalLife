@@ -153,7 +153,6 @@ d3.json('../Misc/2019.json').then((data) => {
   countriesData['Puerto Rico'] = countriesData['United States'];
   countriesData['S. Sudan'] = countriesData['South Sudan'];
 
-  console.log(countriesData);
 });
 
 // Data from firebase -- Continously

@@ -200,7 +200,6 @@ d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/2019.json').then(function (data
   countriesData['Palestine'] = countriesData['Palestinian Territories'];
   countriesData['Puerto Rico'] = countriesData['United States'];
   countriesData['S. Sudan'] = countriesData['South Sudan'];
-  console.log(countriesData);
 }); // Data from firebase -- Continously
 // db.collection('countries').onSnapshot( res => {
 //   res.docChanges().forEach( change => {
@@ -245,117 +244,60 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 /* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../index */ "./index.js");
 
- // export const displaythree = '';
 
-var dataKeys = {
-  xName: 'Country (region)',
-  yNames: ['Corruption', 'Country (region)', 'Freedom', 'Generosity', 'Health life expectancy', 'Ladder', 'Log of GDP per capita', 'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support']
+var dims = {
+  height: 300,
+  width: 300,
+  radius: 150
 };
-var three = document.getElementById('three');
-var totalGraphWidth = three.clientWidth;
-var totalGraphHeight = three.clientHeight; // create margins and dimensions
-
-var margin = {
-  top: 20,
-  right: 20,
-  bottom: 100,
-  left: 10
+var cent = {
+  x: dims.width / 2 + 5,
+  y: dims.height / 2 + 5
 };
-var graphWidth = totalGraphWidth - margin.left - margin.right;
-var graphHeight = totalGraphHeight - margin.top - margin.bottom;
-var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#three').append('svg').attr('width', totalGraphWidth).attr('height', totalGraphHeight); // .attr('transform', `translate(${(window.innerWidth - totalGraphWidth - 50) / 2})`)
-
-var graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight).attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")"));
-var xAxisGroup = graph.append('g').attr('transform', "translate(0, ".concat(graphHeight, ")"));
-var yAxisGroup = graph.append('g'); // Scales
-
-var y = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().range([graphHeight, 0]);
-var x = d3__WEBPACK_IMPORTED_MODULE_0__["scaleBand"]().range([0, graphWidth]).paddingInner(0.2).paddingOuter(0.2);
-var title = graph.append('text').attr('y', -2).attr('x', graphWidth / 2.5).text('');
-var xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](x);
-var yAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisLeft"](y); // .ticks(3)
-// .tickFormat(d => d + ' Rank')
-
-xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'start').attr('fill', 'white').attr('color', 'white');
+var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#four').append('svg').attr('width', dims.width + 150).attr('height', dims.height + 150);
+var graph = svg.append('g').attr('transform', "translate(".concat(cent.x, ", ").concat(cent.y, ")"));
+var pie = d3__WEBPACK_IMPORTED_MODULE_0__["pie"]().sort(null).value(function (d) {
+  console.log(d);
+  return d.cost;
+});
+var angles = pie([{
+  name: 'rent',
+  cost: 500
+}, {
+  name: 'bills',
+  cost: 300
+}, {
+  name: 'gaming',
+  cost: 200
+}]);
+console.log(angles);
+var arcPath = d3__WEBPACK_IMPORTED_MODULE_0__["arc"]().outerRadius(dims.radius).innerRadius(dims.radius / 2);
+console.log(arcPath(angles[0]));
 var displayThree = function displayThree(country) {
   var data = Object.assign({}, _index__WEBPACK_IMPORTED_MODULE_1__["randomData"][country]);
+  console.log(data); // console.log(randomDa)
+
+  return;
   var countryName = data['Country'];
-  console.log(data); // delete data['Country'];
-  // delete data['Agriculture'];
-  // delete data['Climate'];
-  // delete data['Coastline (coast/area ratio)'];
-  // delete data['Crops (%)'];
-  // delete data['GDP ($ per capita)'];
-  // delete data['Industry'];
-  // delete data['Literacy (%)'];
-  // delete data['Infant mortality (per 1000 births)'];
-  // delete data['Net migration'];
-  // delete data['Other (%)'];
-  // delete data['Phones (per 1000)'];
-  // delete data['Pop. Density (per sq. mi.)'];
-  // delete data['Population'];
-  // delete data['Region'];
-  // delete data['Service'];
-  // delete data['Area (sq. mi.)'];
-  // delete data['Arable (%)'];
-
-  return; // console.log(data);
-  // return;
-
-  var barsKeys = Object.keys(data);
-  var barsValues = Object.values(data);
-  var bars = [];
-  barsKeys.forEach(function (key, idx) {
-    bars[idx] = {
-      name: barsKeys[idx],
-      value: barsValues[idx]
-    };
-  }); // 156 total countries are evaluated, so the maximum is the lowest rated country
-
-  y.domain([0, 52]); // Number of categories
-
-  x.domain(barsKeys); // Tie data to the rects available
-
-  var rects = graph.selectAll('rect').data(bars);
-  rects.exit().remove();
-  rects.attr('width', x.bandwidth).attr('fill', 'white').attr('x', function (d) {
-    return x(d.name);
-  }); // .transition().duration(1000)
-  //   .attr('y', d => y(d.value))
-  //   .attr('height', d => graphHeight - y(d.value));
-  // return;
-
-  rects.enter().append("rect").attr("width", x.bandwidth).attr("height", 0).attr("fill", "white").attr('x', function (d) {
-    return x(d.name);
-  }).attr('y', graphHeight).merge(rects) // Everything called below merge affects both entered and currently existing elements
-  .transition().duration(1500).attr('y', function (d) {
-    if (typeof d.value === 'string') {
-      var newValue = d.value.replace(/,/g, ".");
-      return y(newValue);
-    }
-
-    return y(d.value);
-  }).attr('height', function (d) {
-    if (typeof d.value === 'string') {
-      var newValue = d.value.replace(/,/g, ".");
-      return graphHeight - y(newValue);
-    }
-
-    return graphHeight - y(d.value);
-  });
-  xAxisGroup.call(xAxis); // yAxisGroup.call(yAxis);
-
-  xAxisGroup.selectAll('text').attr('transform', "rotate(-40)").attr('text-anchor', 'end').attr('fill', 'white');
-  title.text("".concat(countryName));
-  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').attr('fill', 'white');
-  d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('text').style('fill', 'white');
-}; // TWEENS
-// const widthTween = (d) => {
-//   let i = d3.interpolate(0, x.bandwidth());
-//   return function (t) {
-//     return i(t);
-//   }
-// }
+  delete data['Country'];
+  delete data['Agriculture'];
+  delete data['Climate'];
+  delete data['Coastline (coast/area ratio)'];
+  delete data['Crops (%)'];
+  delete data['GDP ($ per capita)'];
+  delete data['Industry'];
+  delete data['Literacy (%)'];
+  delete data['Infant mortality (per 1000 births)'];
+  delete data['Net migration'];
+  delete data['Other (%)'];
+  delete data['Phones (per 1000)'];
+  delete data['Pop. Density (per sq. mi.)'];
+  delete data['Population'];
+  delete data['Region'];
+  delete data['Service'];
+  delete data['Area (sq. mi.)'];
+  delete data['Arable (%)'];
+};
 
 /***/ }),
 
@@ -680,34 +622,7 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-} // import * as THREE from 'three';
-// import * as d3 from 'd3';
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-// const world = document.getElementsByClassName('world')[0];
-// const width = world.clientWidth;
-// const height = world.clientHeight;
-// export var canvas = d3.select(".world").append("canvas")
-//   .attr("width", width)
-//   .attr("height", height)
-// canvas.node().getContext("webgl");
-// export var renderer = new THREE.WebGLRenderer({ canvas: canvas.node(), antialias: true });
-// renderer.setSize(width, height);
-// world.appendChild(renderer.domElement);
-// export var camera = new THREE.PerspectiveCamera(70, width / height, 1, 5000);
-// camera.position.z = 1000;
-// export let controls = new OrbitControls(camera, renderer.domElement);
-// // // controls.autoRotate = true;
-// controls.enabled = true;
-// export var scene = new THREE.Scene();
-// export var light = new THREE.HemisphereLight('#ffffff', '#666666', 1.5);
-// light.position.set(0, 1000, 0);
-// scene.add(light);
-// window.addEventListener('resize', onWindowResize, false);
-// function onWindowResize() {
-//   camera.aspect = width / height;
-//   camera.updateProjectionMatrix();
-//   renderer.setSize(world, height);
-// }
+}
 
 /***/ }),
 
@@ -920,11 +835,7 @@ d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/worldData.json').then(function 
     transparent: true
   });
   var baseMap = new three__WEBPACK_IMPORTED_MODULE_1__["Mesh"](new three__WEBPACK_IMPORTED_MODULE_1__["SphereGeometry"](globeSize, segments, segments), mapMaterial);
-  baseMap.rotation.y = Math.PI; // var material = new THREE.MeshNormalMaterial();
-  // var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
-  // var sphere = new THREE.Mesh(sphereGeometry, material);
-  // sphere.position.set(-60, 55, 0);
-  // scene.add(sphere);
+  baseMap.rotation.y = Math.PI; // Outline Mesh on the globe, scalar represents thickness of border
 
   var outlineMaterial = new three__WEBPACK_IMPORTED_MODULE_1__["MeshBasicMaterial"]({
     color: '#fff',
@@ -943,8 +854,7 @@ d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/worldData.json').then(function 
 
   function onGlobeClick(event) {
     console.log(currentCountry);
-    Object(_graphs_one__WEBPACK_IMPORTED_MODULE_8__["displayOne"])(_graphs_one__WEBPACK_IMPORTED_MODULE_8__["countriesData"][currentCountry]); // console.log(randomData[currentCountry]);
-
+    Object(_graphs_one__WEBPACK_IMPORTED_MODULE_8__["displayOne"])(_graphs_one__WEBPACK_IMPORTED_MODULE_8__["countriesData"][currentCountry]);
     Object(_graphs_two__WEBPACK_IMPORTED_MODULE_9__["displayTwo"])(currentCountry);
     Object(_graphs_three__WEBPACK_IMPORTED_MODULE_10__["displayThree"])(currentCountry); // console.log(controls.object.position);
     // console.log(controls.object.quaternion);
@@ -1002,7 +912,7 @@ d3__WEBPACK_IMPORTED_MODULE_0__["json"]('../Misc/worldData.json').then(function 
 
       d3__WEBPACK_IMPORTED_MODULE_0__["select"]("#msg").html(country.code); // Overlay the selected country
 
-      map = textureCache(country.code, '#AAA');
+      map = textureCache(country.code, '#999');
       material = new three__WEBPACK_IMPORTED_MODULE_1__["MeshPhongMaterial"]({
         map: map,
         transparent: true

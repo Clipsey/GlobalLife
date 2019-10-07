@@ -52,7 +52,7 @@ table {
   height: 100vh;
   width: 100vw;
   padding: 20px;
-  border: solid 1px white;
+  /* border: solid 1px white; */
   z-index: 0;
   background: black;
 }
@@ -107,12 +107,6 @@ svg {
   z-index: 2;
 }
 #six {
-  z-index: 2;
-}
-#seven {
-  z-index: 2;
-}
-#eight {
   z-index: 2;
 }
 
