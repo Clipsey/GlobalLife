@@ -54,7 +54,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
   display: block;
 }
 
-.stars, .twinkling, .clouds {
+.stars, .twinkling {
   position: absolute;
   display: block;
   top: 0;
@@ -84,12 +84,3 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
     background-position: -10000px 5000px;
   }
 }
-@keyframes move-clouds-back {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 10000px 0;
-  }
-}
-
