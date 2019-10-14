@@ -10,8 +10,11 @@ import { displayThree } from './graphs/three';
 import { displayFour } from './graphs/four';
 import { displayFive } from './graphs/five';
 
+import worldData from './Misc/worldData.json';
+import countriesOfTheWorld from './Misc/countriesOfTheWorld.json';
+
 export const randomData = {};
-d3.json('../GlobalLife/Misc/countriesOfTheWorld.json').then((countryData) => {
+d3.json('./Misc/countriesOfTheWorld.json').then((countryData) => {
 
   countryData.forEach(country => {
     randomData[country.Country] = country;
@@ -68,7 +71,7 @@ d3.json('../GlobalLife/Misc/countriesOfTheWorld.json').then((countryData) => {
 /* ---------------------------  */
 
 // Load total mapping, should scale based on screen size
-d3.json('../GlobalLife/Misc/worldData.json').then((data) => {
+d3.json('./Misc/worldData.json').then((data) => {
 
   let currentCountry, overlay;
 

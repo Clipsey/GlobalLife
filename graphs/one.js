@@ -1,3 +1,5 @@
+import json2019 from '../Misc/2019.json';
+
 const dataKeys = {
   xName: 'Country (region)',
   yNames:
@@ -131,7 +133,7 @@ export const displayOne = (country) => {
 export let countriesData = {};
 
 
-d3.json('../GlobalLife/Misc/2019.json').then((data) => {
+d3.json('../Misc/2019.json').then((data) => {
   data.countries.forEach(country => {
     countriesData[country['Country (region)']] = country;
   });
