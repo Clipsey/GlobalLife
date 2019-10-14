@@ -1,4 +1,4 @@
-import json2019 from './Misc/2019.json';
+import json2019 from './Misc/year2019.json';
 
 const one = document.getElementById('one');
 
@@ -121,7 +121,6 @@ export const displayOne = (country) => {
 }
 
 export let countriesData = {};
-
 
 const load2019Data = (data) => {
   data.countries.forEach(country => {
