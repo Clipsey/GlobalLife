@@ -1,4 +1,4 @@
-import json2019 from '../Misc/2019.json';
+import json2019 from './2019.json';
 
 const dataKeys = {
   xName: 'Country (region)',
