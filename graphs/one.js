@@ -133,7 +133,7 @@ export const displayOne = (country) => {
 export let countriesData = {};
 
 
-d3.json('../Misc/2019.json').then((data) => {
+d3.json(json2019).then((data) => {
   data.countries.forEach(country => {
     countriesData[country['Country (region)']] = country;
   });

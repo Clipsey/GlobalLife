@@ -14,7 +14,7 @@ import worldData from './Misc/worldData.json';
 import countriesOfTheWorld from './Misc/countriesOfTheWorld.json';
 
 export const randomData = {};
-d3.json('./Misc/countriesOfTheWorld.json').then((countryData) => {
+d3.json(countriesOfTheWorld).then((countryData) => {
 
   countryData.forEach(country => {
     randomData[country.Country] = country;
@@ -71,7 +71,7 @@ d3.json('./Misc/countriesOfTheWorld.json').then((countryData) => {
 /* ---------------------------  */
 
 // Load total mapping, should scale based on screen size
-d3.json('./Misc/worldData.json').then((data) => {
+d3.json(worldData).then((data) => {
 
   let currentCountry, overlay;
 
