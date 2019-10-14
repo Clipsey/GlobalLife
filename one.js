@@ -1,14 +1,4 @@
-import json2019 from './2019.json';
-
-const dataKeys = {
-  xName: 'Country (region)',
-  yNames:
-    [
-      'Corruption', 'Country (region)', 'Freedom', 'Generosity',
-      'Health life expectancy', 'Ladder', 'Log of GDP per capita',
-      'Negative affect', 'Positive affect', 'SD of Ladder', 'Social support'
-    ],
-}
+import json2019 from './Misc/2019.json';
 
 const one = document.getElementById('one');
 

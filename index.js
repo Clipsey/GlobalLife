@@ -5,7 +5,7 @@ import { scene, camera, renderer, controls } from './helpers/sceneSetup';
 import { setEvents } from './helpers/eventSetup';
 import { convertToXYZ, getEventCenter, geodecoder } from './helpers/worldEvents';
 import { getTween, memoize } from './helpers/generalSetup';
-import { displayOne, countriesData } from './graphs/one';
+import { displayOne, countriesData } from './one';
 import { displayThree } from './graphs/three';
 import { displayFour } from './graphs/four';
 import { displayFive } from './graphs/five';
