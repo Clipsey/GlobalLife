@@ -133,7 +133,7 @@ export const displayOne = (country) => {
 export let countriesData = {};
 
 
-d3.json(json2019).then((data) => {
+const load2019Data = (data) => {
   data.countries.forEach(country => {
     countriesData[country['Country (region)']] = country;
   });
@@ -155,7 +155,8 @@ d3.json(json2019).then((data) => {
   countriesData['Puerto Rico'] = countriesData['United States'];
   countriesData['S. Sudan'] = countriesData['South Sudan'];
 
-});
+}
+load2019Data(json2019);
 
 // Data from firebase -- Continously
 // db.collection('countries').onSnapshot( res => {

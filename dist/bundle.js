@@ -432,7 +432,8 @@ var displayOne = function displayOne(country) {
   // d3.selectAll('text').style('fill', 'white')
 };
 var countriesData = {};
-d3.json('../Misc/2019.json').then(function (data) {
+
+var load2019Data = function load2019Data(data) {
   data.countries.forEach(function (country) {
     countriesData[country['Country (region)']] = country;
   }); // Countries that are availabled in both sets, but don't have equivalent names:
@@ -452,7 +453,9 @@ d3.json('../Misc/2019.json').then(function (data) {
   countriesData['Palestine'] = countriesData['Palestinian Territories'];
   countriesData['Puerto Rico'] = countriesData['United States'];
   countriesData['S. Sudan'] = countriesData['South Sudan'];
-}); // Data from firebase -- Continously
+};
+
+load2019Data(_Misc_2019_json__WEBPACK_IMPORTED_MODULE_0__); // Data from firebase -- Continously
 // db.collection('countries').onSnapshot( res => {
 //   res.docChanges().forEach( change => {
 //     const doc = { ...change.doc.data() };
@@ -963,7 +966,8 @@ var _Misc_countriesOfTheWorld_json__WEBPACK_IMPORTED_MODULE_12___namespace = /*#
 
 
 var randomData = {};
-d3.json('./Misc/countriesOfTheWorld.json').then(function (countryData) {
+
+var loadCountriesOfTheWorldData = function loadCountriesOfTheWorldData(countryData) {
   countryData.forEach(function (country) {
     randomData[country.Country] = country;
   });
@@ -984,7 +988,9 @@ d3.json('./Misc/countriesOfTheWorld.json').then(function (countryData) {
   randomData['Timor-Leste'] = randomData["East Timor"];
   randomData["Trinidad and Tobago"] = randomData['Trinidad & Tobago']; // Agriculture / Industry / Service
   // Arable (%) / Crops (%) / Other (%)
-});
+};
+
+loadCountriesOfTheWorldData(_Misc_countriesOfTheWorld_json__WEBPACK_IMPORTED_MODULE_12__);
 /*
 
   const countryName = data['Country'];
@@ -1014,7 +1020,7 @@ d3.json('./Misc/countriesOfTheWorld.json').then(function (countryData) {
 /* ---------------------------  */
 // Load total mapping, should scale based on screen size
 
-d3.json('./Misc/worldData.json').then(function (data) {
+var loadWorldData = function loadWorldData(data) {
   var currentCountry, overlay;
   var segments = 500;
   var globeSize = 100; // GeoJSON conversion from countries data in topology 'data'
@@ -1156,7 +1162,9 @@ d3.json('./Misc/worldData.json').then(function (data) {
 
   Object(_helpers_eventSetup__WEBPACK_IMPORTED_MODULE_4__["setEvents"])(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_3__["camera"], [baseGlobe], 'click', 500);
   Object(_helpers_eventSetup__WEBPACK_IMPORTED_MODULE_4__["setEvents"])(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_3__["camera"], [baseGlobe], 'mousemove', 2);
-});
+};
+
+loadWorldData(_Misc_worldData_json__WEBPACK_IMPORTED_MODULE_11__);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -1164,45 +1172,7 @@ function animate() {
   _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_3__["renderer"].render(_helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_3__["scene"], _helpers_sceneSetup__WEBPACK_IMPORTED_MODULE_3__["camera"]);
 }
 
-animate(); //     let ignoredNames = {};
-//     ignoredNames['Bosnia and Herzegovina'] = 'found';
-//     ignoredNames['Central African Republic'] = 'found';
-//     ignoredNames['Congo (Kinshasa)'] = 'found';
-//     ignoredNames['Congo (Brazzaville)'] = 'found';
-//     ignoredNames['Czech Republic'] = 'found';
-//     ignoredNames['Northern Cyprus'] = 'found';
-//     ignoredNames['South Korea'] = 'found';
-//     ignoredNames['Laos'] = 'found';
-//     ignoredNames['Palestinian Territories'] = 'found';
-//     ignoredNames['United States'] = 'found';
-//     ignoredNames['South Sudan'] = 'found';
-//     ignoredNames['Dominican Republic'] = 'found';
-//     ignoredNames['Ivory Coast'] = 'found';
-//     //Angola --> No Data
-//     //Antartica --> No Data
-//     //Fr. S. Antartic Lands --> No Data
-//     //Bahamas --> No data
-//     //Belize --> No data
-//     //Brunei --> No data
-//     //Cuba --> No data
-//     //Eritrea --> No Data
-//     //Fiji --> No data
-//     //Falkland Island --> No data
-//     //Guinea-Bissau --> No Data
-//     //Eq. Guinea --> No data
-//     //Greenland --> No data
-//     //Guyana --> No Data
-//     //New Caledonia --> No data
-//     //Oman --> No data
-//     //Papua New Guinea --> No data
-//     //Dem. Rep. Korea. --> No data
-//     //W. Sahara --> No Data
-//     //Sudan --> No Data
-//     //Solomon Is. --> No Data
-//     //Somaliland -> No Data
-//     //Suriname --> No Data
-//     //Timor-Leste --> No Data
-//     //Vanuatu --> No Data
+animate();
 
 /***/ }),
 

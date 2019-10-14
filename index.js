@@ -14,7 +14,7 @@ import worldData from './Misc/worldData.json';
 import countriesOfTheWorld from './Misc/countriesOfTheWorld.json';
 
 export const randomData = {};
-d3.json(countriesOfTheWorld).then((countryData) => {
+const loadCountriesOfTheWorldData = (countryData) => {
 
   countryData.forEach(country => {
     randomData[country.Country] = country;
@@ -39,7 +39,8 @@ d3.json(countriesOfTheWorld).then((countryData) => {
 
   // Agriculture / Industry / Service
   // Arable (%) / Crops (%) / Other (%)
-});
+};
+loadCountriesOfTheWorldData(countriesOfTheWorld);
 
 /*
 
@@ -71,7 +72,7 @@ d3.json(countriesOfTheWorld).then((countryData) => {
 /* ---------------------------  */
 
 // Load total mapping, should scale based on screen size
-d3.json(worldData).then((data) => {
+const loadWorldData = (data) => {
 
   let currentCountry, overlay;
 
@@ -217,7 +218,8 @@ d3.json(worldData).then((data) => {
 
   setEvents(camera, [baseGlobe], 'click', 500);
   setEvents(camera, [baseGlobe], 'mousemove', 2);
-});
+};
+loadWorldData(worldData);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -225,44 +227,3 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
-
-//     let ignoredNames = {};
-//     ignoredNames['Bosnia and Herzegovina'] = 'found';
-//     ignoredNames['Central African Republic'] = 'found';
-//     ignoredNames['Congo (Kinshasa)'] = 'found';
-//     ignoredNames['Congo (Brazzaville)'] = 'found';
-//     ignoredNames['Czech Republic'] = 'found';
-//     ignoredNames['Northern Cyprus'] = 'found';
-//     ignoredNames['South Korea'] = 'found';
-//     ignoredNames['Laos'] = 'found';
-//     ignoredNames['Palestinian Territories'] = 'found';
-//     ignoredNames['United States'] = 'found';
-//     ignoredNames['South Sudan'] = 'found';
-//     ignoredNames['Dominican Republic'] = 'found';
-//     ignoredNames['Ivory Coast'] = 'found';
-
-//     //Angola --> No Data
-//     //Antartica --> No Data
-//     //Fr. S. Antartic Lands --> No Data
-//     //Bahamas --> No data
-//     //Belize --> No data
-//     //Brunei --> No data
-//     //Cuba --> No data
-//     //Eritrea --> No Data
-//     //Fiji --> No data
-//     //Falkland Island --> No data
-//     //Guinea-Bissau --> No Data
-//     //Eq. Guinea --> No data
-//     //Greenland --> No data
-//     //Guyana --> No Data
-//     //New Caledonia --> No data
-//     //Oman --> No data
-//     //Papua New Guinea --> No data
-//     //Dem. Rep. Korea. --> No data
-//     //W. Sahara --> No Data
-//     //Sudan --> No Data
-//     //Solomon Is. --> No Data
-//     //Somaliland -> No Data
-//     //Suriname --> No Data
-//     //Timor-Leste --> No Data
-//     //Vanuatu --> No Data
